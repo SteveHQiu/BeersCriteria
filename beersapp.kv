@@ -1,0 +1,26 @@
+<RootLayout>:
+    display_label: display_label # Assigns the call of display_label to an identifier within kv file
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            text: "Label 1"
+            font_size: 64
+            color: 0.5, 0.5, 0.5, 1
+        Label:
+            id: display_label
+            text: "Display label"
+            font_size: 64
+        Button:
+            text: "Button 1"
+            font_size: 32
+            size: 100, 50
+            on_press: root.genNumber() 
+            # root refers to root layout class that calls this file
+            # Use dot method notation to access functions within root layout class
+
+
+MainWidget:
+<MainWidget>:
+    Button:
+        text: "Widget button"
+        size: 100, 100
