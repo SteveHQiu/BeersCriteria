@@ -17,13 +17,12 @@ def getGenericName(drug: str):
     global DATA
     drug = drug.upper() # Uppercase to match data
     if drug in DATA["ActiveIngredient"].unique(): # Check if drug name already generic first
-        print("Generic drug")
+        print("Generic drug")        
         return drug
     elif drug in DATA["DrugName"].unique(): # If drug name in column; without unique() method, will check if value is in the index instead of values
         # Get active ingredient of that row and return it 
         entry = DATA.loc[DATA["DrugName"] == drug]
         generic_name = entry.iat[0,2] # Retrieves value in row 1, col 3 in df of 1 row
-        print(type(entry))
         print(F"Brand drug, converted to generic name {generic_name}")
         return generic_name
     else:
@@ -32,7 +31,7 @@ def getGenericName(drug: str):
 
 getGenericName("apixaban")
 getGenericName("seroquel")
-getGenericName("dilantin")
+getGenericName("Carbinoxamine")
 
 
 # %%
