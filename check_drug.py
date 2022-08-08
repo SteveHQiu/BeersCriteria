@@ -2,6 +2,8 @@ import json
 import pandas as pd
 from pandas import DataFrame
 from itertools import combinations, permutations
+import networkx as nx
+from networkx.algorithms.bipartite.matching import hopcroft_karp_matching
 
 import drugstandards as drugs
 
@@ -33,23 +35,20 @@ def checkInterac(drugs: list[str]):
         for index, row in DF_I.iterrows():
             cols = ["Drug 1", "Drug 2", "Drug 3"]
             cols = [col for col in cols if type(row[col]) == str] # Default cell value is float of nan, only parse strings 
-            for drug_perm in permutations(drugs, len(drugs)):
-                col_dict = {col: 0 for col in cols} # Re-instantiate empty dict each permutation
-                tracker: list[str] = [] # Tracker so that once drug is entered into a class, it is consumed
-                for drug_cat in cols:
-                    members_str: str = row[drug_cat]
-                    members: list[str] = json.loads(members_str)
-                    for drug in drug_perm:
-                        if col_dict[drug_cat] != 1: # Only continue to find members if this category has not been filled
-                            drug = drug.upper()
-                            if drug in members and drug not in tracker: # If there is membership, it hasn't been tracked already, and the category has not already been satisfied
-                                tracker.append(drug) 
-                                col_dict[drug_cat] = 1
-                values = [col_dict[key] for key in col_dict]
-                if all(values): # If all values are non-zero (i.e., all categories have been satisfied)
-                    print("Rule satisfied Lmao")
-                    # Add this rule to the report since multiple may be satisfied 
-                    return
+            graph = nx.Graph()
+            graph.add_nodes_from(cols, bipartite=0)
+            graph.add_nodes_from(drugs, bipartite=1)
+            for drug_cat in cols:
+                members_str: str = row[drug_cat]
+                members: list[str] = json.loads(members_str)
+                for drug in drugs:
+                    drug = drug.upper()
+                    if drug in members: # If there is membership, it hasn't been tracked already, and the category has not already been satisfied
+                        graph.add_edge(drug_cat, drug)
+            max_match = hopcroft_karp_matching(graph, cols)
+            if len(max_match)/2 >= len(cols): # Divide by 2 since max match output is undirected
+                print(str(max_match)[:50])
+                return
                     
         # Can probably solve this more efficiently with Hall's theorem via graphs
     print("No interactions")

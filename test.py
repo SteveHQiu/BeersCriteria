@@ -4,7 +4,7 @@ from pandas import DataFrame
 import timeit
 
 from check_drug import checkInterac
-items = ["Losartan", "Gabapentin", "Gabapentin", "Pregabalin", "Lacosamide", "Losartan", "Gabapentin", "Gabapentin"]
+items = ["CHLORDIAZEPOXIDE", "HEROIN", "CODEINE", "OXYCODONE", "HYDROCODONE", "TRAMADOL", "MORPHINE", "HYDROMORPHONE", "FENTANYL", "DOXAZOSIN", "BENAZEPRIL", "CAPTOPRIL", "ENALAPRIL"]
 print(len(items))
 start = timeit.default_timer()
 checkInterac(items)
