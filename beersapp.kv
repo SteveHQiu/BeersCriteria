@@ -4,24 +4,27 @@
     # Need to add links from object ids to properties (which can be access via self. in python code)
     display_label: display_label # Assigns the call of display_label to an identifier within kv file
     text_in1: text_in1
-
     BoxLayout:
-        orientation: "vertical"
-        TextInput:
-            id: text_in1 # ID assigns the identifier of this object in the root object in python (i.e., RootLayout)
-            height: 10
+        orientation: "horizontal"
         Label:
             id: display_label
-            text: ""
+            text: "Report output"
             text_size: self.size
             halign: 'left'
             valign: 'middle'
             # font_size: 64
-        Button:
-            text: "Generate report"
-            height: 10
-            # font_size: 32
-            # size: 100, 50
-            on_press: root.checkBeers()
-            # root refers to root layout class that calls this file
-            # Use dot method notation to access functions within root layout class
+        BoxLayout:
+            orientation: "vertical"
+            size_hint_x: 0.5 # Only take half of the allocated space in x-direction for inputs
+            TextInput:
+                id: text_in1 # ID assigns the identifier of this object in the root object in python (i.e., RootLayout)
+                height: 10
+            Button:
+                text: "Generate report"
+                height: 10
+                # font_size: 32
+                # size: 100, 50
+                size_hint_y: 0.15
+                on_press: root.checkBeers()
+                # root refers to root layout class that calls this file
+                # Use dot method notation to access functions within root layout class

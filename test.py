@@ -4,10 +4,10 @@ from pandas import DataFrame
 import timeit
 
 from check_drug import checkInterac
-items = ["CHLORDIAZEPOXIDE", "HEROIN", "CODEINE", "OXYCODONE", "HYDROCODONE", "TRAMADOL", "MORPHINE", "HYDROMORPHONE", "FENTANYL", "DOXAZOSIN", "BENAZEPRIL", "CAPTOPRIL", "ENALAPRIL"]
+items = ["LMAODRUG1"]
 print(len(items))
 start = timeit.default_timer()
-checkInterac(items)
+print(checkInterac(items))
 stop = timeit.default_timer()
 
 print('Time: ', stop - start) 

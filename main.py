@@ -11,7 +11,8 @@ import random
 # Test
 # Internals 
 from standardization import getGenericName
-from check_drug import checkDrug
+import drugstandards
+from check_drug import checkDrug, checkInterac
 
 
 
@@ -31,11 +32,19 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
         text_in: str = self.text_in1.text
         if "\n" in text_in:
             print("Newline character detected")
-        texts = text_in.split("\n")     
-        print("Input texts: ", texts)
-        report = ""
-        for text in texts:
-            report += checkDrug(text) + "\n---------------------\n"
+        drugs = text_in.split("\n")     
+        print("Input texts: ", drugs)
+        drugs_std = [drugstandards.standardize([d])[0] for d in drugs]
+        drugs_std = [d for d in drugs_std if d] # Filter empty data types
+        drugs_std = list(set(drugs_std)) # Screen out duplicates
+        print("Standardized: ", drugs_std)
+        report = f"======Drug Screen======\nDrugs detected: {drugs_std}\n"
+        for drug in drugs_std:
+            drug_warning = checkDrug(drug, std=False)
+            if drug_warning:
+                report += drug_warning + "\n---------------------\n" # Disable standardization to save computation
+        report += "======Interactions======\n"
+        report += checkInterac(drugs_std, std=False)
         self.display_label.text = report
 
 
