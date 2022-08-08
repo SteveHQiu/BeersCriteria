@@ -3,9 +3,14 @@ import json
 from pandas import DataFrame
 import timeit
 
-b = "hey"
-a = f"Variable \nb is {b}"
-print(a)
+from check_drug import checkInterac
+items = ["Losartan", "Gabapentin", "Gabapentin", "Pregabalin", "Lacosamide", "Losartan", "Gabapentin", "Gabapentin"]
+print(len(items))
+start = timeit.default_timer()
+checkInterac(items)
+stop = timeit.default_timer()
+
+print('Time: ', stop - start) 
 
 
 if 0:

@@ -1,7 +1,7 @@
 import json
 import pandas as pd
 from pandas import DataFrame
-from itertools import combinations
+from itertools import combinations, permutations
 
 import drugstandards as drugs
 
@@ -30,30 +30,38 @@ def checkDrug(drug: str):
 def checkInterac(drugs: list[str]):
     global DF_I
     if len(drugs) > 1:
-        tracker: list[str] = [] # Tracker so that once drug is entered into a class, it is consumed
         for index, row in DF_I.iterrows():
-            col_dict = {"Drug 1": 0, "Drug 2": 0 , "Drug 3": 0}
-            for drug_cat in col_dict:
-                members_str: str = row[drug_cat]
-                if type(members_str) != str or not members_str: # Default cell value is float of nan
-                    col_dict[drug_cat] = -1
-                else:
+            cols = ["Drug 1", "Drug 2", "Drug 3"]
+            cols = [col for col in cols if type(row[col]) == str] # Default cell value is float of nan, only parse strings 
+            for drug_perm in permutations(drugs, len(drugs)):
+                col_dict = {col: 0 for col in cols} # Re-instantiate empty dict each permutation
+                tracker: list[str] = [] # Tracker so that once drug is entered into a class, it is consumed
+                for drug_cat in cols:
+                    members_str: str = row[drug_cat]
                     members: list[str] = json.loads(members_str)
-                    for drug in drugs:
-                        drug = drug.upper()
-                        if drug in members and drug not in tracker:
-                            tracker.append(drug) 
-                            col_dict[drug_cat] += 1
-                            pass
-                        pass
-            new_col_dict = {c: col_dict[c] for c in col_dict if col_dict[c] >= 0}
-            values = [new_col_dict[key] for key in new_col_dict]
-            if all(values): # If all values are non-zero (i.e., all categories have been satisfied)
-                print("Rule satisfied Lmao")
+                    for drug in drug_perm:
+                        if col_dict[drug_cat] != 1: # Only continue to find members if this category has not been filled
+                            drug = drug.upper()
+                            if drug in members and drug not in tracker: # If there is membership, it hasn't been tracked already, and the category has not already been satisfied
+                                tracker.append(drug) 
+                                col_dict[drug_cat] = 1
+                values = [col_dict[key] for key in col_dict]
+                if all(values): # If all values are non-zero (i.e., all categories have been satisfied)
+                    print("Rule satisfied Lmao")
+                    # Add this rule to the report since multiple may be satisfied 
+                    return
                     
-        # Empty should be lower than 0, compare combinations 
+        # Can probably solve this more efficiently with Hall's theorem via graphs
     print("No interactions")
     return 
 
 if __name__ == "__main__":
-    checkInterac(["Losartan", "Trandolapril"])
+    checkInterac(["Losartan", "Trandolapril"]) # Yes
+    checkInterac(["Trandolapril", "Losartan"]) # Yes
+    checkInterac(["Losartan", "Losartan"]) # No
+    checkInterac(["Triamterene", "Losartan"]) # Yes
+    checkInterac(["Losartan", "Quazepam", "Quazepam"]) # No
+    checkInterac(["Losartan", "Quazepam", "Quazepam", "Trospium", "Trospium"]) # No
+    checkInterac(["Losartan", "Quazepam", "Quazepam", "Trospium", "Prochlorperazine"]) # Yes
+    checkInterac(["Losartan", "Gabapentin", "Gabapentin", "Pregabalin"]) # No
+    checkInterac(["Losartan", "Gabapentin", "Gabapentin", "Pregabalin", "Lacosamide"]) # Yes
