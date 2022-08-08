@@ -6,6 +6,7 @@ from kivy.uix.label import Label # Imports Label element
 from kivy.uix.boxlayout import BoxLayout # Imports layout call function which pulls from .kv file with the same name as the class that calls it
 from kivy.uix.widget import Widget
 from kivy.uix.textinput import TextInput
+
 import random
 
 # Test
