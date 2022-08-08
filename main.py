@@ -1,3 +1,5 @@
+import os
+
 import kivy
 from kivy.app import App
 from kivy.uix.label import Label # Imports Label element
@@ -5,9 +7,13 @@ from kivy.uix.boxlayout import BoxLayout # Imports layout call function which pu
 from kivy.uix.widget import Widget
 from kivy.uix.textinput import TextInput
 import random
+
 # Test
 # Internals 
-from generic_conversion import getGenericName
+from standardization import getGenericName
+from check_drug import checkDrug
+
+
 
 class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayout class 
     def __init__(self, **kwargs):
@@ -20,6 +26,17 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
         generic = getGenericName(text_in)
         self.display_label.text = generic
         pass
+    
+    def checkBeers(self):
+        text_in: str = self.text_in1.text
+        if "\n" in text_in:
+            print("Newline character detected")
+        texts = text_in.split("\n")     
+        print("Input texts: ", texts)
+        report = ""
+        for text in texts:
+            report += checkDrug(text) + "\n---------------------\n"
+        self.display_label.text = report
 
 
 

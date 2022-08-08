@@ -9,14 +9,19 @@
         orientation: "vertical"
         TextInput:
             id: text_in1 # ID assigns the identifier of this object in the root object in python (i.e., RootLayout)
+            height: 10
         Label:
             id: display_label
-            text: "Display label"
-            font_size: 64
+            text: ""
+            text_size: self.size
+            halign: 'left'
+            valign: 'middle'
+            # font_size: 64
         Button:
-            text: "Button 1"
+            text: "Generate report"
+            height: 10
             # font_size: 32
             # size: 100, 50
-            on_press: root.getGeneric()
+            on_press: root.checkBeers()
             # root refers to root layout class that calls this file
             # Use dot method notation to access functions within root layout class

@@ -1,14 +1,14 @@
 #%% Imports
+import os
 import pandas as pd
 from pandas import DataFrame
 
 #%% Constants
-DF: DataFrame = pd.read_excel(R"data\products.xlsx")
-DF = DF.dropna(subset=["DrugName", "ActiveIngredient"]) # Drop rows where these are empty
-DF = DF.drop_duplicates(subset="DrugName") # Drop duplicates based on drug name
+file_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(file_dir)
+print(file_dir)
 
-DATA = DF[["DrugName", "ActiveIngredient"]] # Output subset as data 
-DATA = DATA.reset_index() # Reindex to become iterable
+DATA: DataFrame = pd.read_csv(R"data\generics.csv")
 
 
 # %%
@@ -39,5 +39,5 @@ def getGenericName(drug: str):
 if __name__ == "__main__":
     # getGenericName("apixaban")
     # getGenericName("seroquel")
-    getGenericName("DMax")
+    getGenericName("Guanabenz")
 
