@@ -46,15 +46,13 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
         
         accordion.clear_widgets() # Clear widgets before adding
         ac_item = AccordionItem(title=f"{len(drugs_std)} standardized drugs found")
-        label = Label(text=f"{drugs_std} j a;ldkf laksj;d flakjsd;f lkaj;oeifjwapoifjp aodi faposidjfpaoijsdpfo aiwjpe foijwap oefijap oifjpa sodfo;wjae;lkjfoisjdpfo aijpeoqi awjepsofi japsoidjf paoisdfp o;kja;owijv opaoijdsoijafo wiejfp aiwjfp aks;dlkfj; awijefpo a",
+        label = Label(text=f"{drugs_std}",
                       halign='left',
                     #   text_size=(scroll_view.width, None),
                       )
-        label = Label(text='blah blah '* 1000, size_hint=(1, None))
-        a = lambda *x: label.setter('text_size')
-        b = lambda *x: label.setter('text_size')(label, (label.width, None))
-        label.bind(width=lambda *x: label.setter('text_size')(label, (label.width, None)),
+        label.bind(width=lambda *x: label.setter('text_size')(label, (label.width, None)), 
         texture_size=lambda *x: label.setter('height')(label, label.texture_size[1]))
+        # Binds the changes in one property to the setter of another property such that every time kivy tries to change the anchor property, it will also pass the new property value (or some aspect of it) to the setter of the linked property
         ac_item.add_widget(label)
         accordion.add_widget(ac_item)
         

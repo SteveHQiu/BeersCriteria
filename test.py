@@ -2,12 +2,13 @@ import pandas as pd
 import json
 from pandas import DataFrame
 import timeit
-#%%
+#%% Partials
 if 1:
     from functools import partial
-    basetwo = partial(int, base=2)
-    a = lambda *x: 10, 
-    print(a())
+    fx = partial(int, base=2)
+    a = lambda *x: fx("10101")
+    print(a)
+    print(a("asdfads"))
 #%%
 if 0:
     from check_drug import checkInterac
