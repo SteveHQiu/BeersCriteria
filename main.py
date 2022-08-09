@@ -45,25 +45,27 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
         print("Standardized: ", drugs_std)
         
         accordion.clear_widgets() # Clear widgets before adding
-        ac_item = AccordionItem(title=f"{len(drugs_std)} standardized drugs found")
-        label = Label(text=f"{drugs_std}",
-                      halign='left',
-                    #   text_size=(scroll_view.width, None),
-                      )
-        label.bind(width=lambda *x: label.setter('text_size')(label, (label.width, None)), 
-        texture_size=lambda *x: label.setter('height')(label, label.texture_size[1]))
-        # Binds the changes in one property to the setter of another property such that every time kivy tries to change the anchor property, it will also pass the new property value (or some aspect of it) to the setter of the linked property
+        ac_item = AccordionItem(title=f"{len(drugs_std)} standardized drugs found", title_template="CustTitle")
+        label = WrappedLabel(text=f"{drugs_std}", halign='left')
         ac_item.add_widget(label)
         accordion.add_widget(ac_item)
         
-        report = f"======Drug Screen======\nDrugs detected: {drugs_std}\n"
+        # Drug screening
         for drug in drugs_std:
             drug_warning = checkDrug(drug, std=False)
             if drug_warning:
-                report += drug_warning + "\n---------------------\n" # Disable standardization to save computation
-        report += "======Interactions======\n"
-        report += checkInterac(drugs_std, std=False)
-        # self.ids.display_label.text = report
+                ac_item = AccordionItem(title=f"Potential issues with {drug}", title_template="CustTitle")
+                label = WrappedLabel(text=f"{drug_warning}", halign='left')
+                ac_item.add_widget(label)
+                accordion.height += 50 # Add room to accordion to accomodate new item
+                accordion.add_widget(ac_item)
+        # Interaction reporting
+        for offending_drugs, report in checkInterac(drugs_std, std=False):
+            ac_item = AccordionItem(title=f"Interaction between {offending_drugs}", title_template="CustTitle")
+            label = WrappedLabel(text=f"{report}", halign='left')
+            ac_item.add_widget(label)
+            accordion.height += 50 #  Add room to accordion to accomodate new item
+            accordion.add_widget(ac_item)
         
     def checkBeers1(self):
         accordian: Accordion = self.ids.accordion # Use element with "accordion" id (doesn't need to be bound) to assign ScrollView object
@@ -74,8 +76,13 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
         print(self.ids.accordion)
         
 
-
-
+class WrappedLabel(Label):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.padding_x = 10
+        self.bind(width=lambda *x: self.setter('text_size')(self, (self.width, None)), 
+                texture_size=lambda *x: self.setter('height')(self, self.texture_size[1]))
+        # Binds the changes in one property to the setter of another property such that every time kivy tries to change the anchor property, it will also pass the new property value (or some aspect of it) to the setter of the linked property
 
 
 

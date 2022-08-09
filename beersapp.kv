@@ -1,5 +1,27 @@
 #:kivy 2.1.0
 
+[CustTitle@Label]: # Define a custom title template for the accordion items to modify title alignment
+    text: ctx.title
+    text_size: self.width - dp(10), None # Constrain to size to width so that text (already left aligned) shifts to edge
+    canvas.before:
+        Color:
+            rgb: 1, 1, 1
+        BorderImage:
+            source:
+                ctx.item.background_normal                         if ctx.item.collapse                         else ctx.item.background_selected
+            pos: self.pos
+            size: self.size
+        PushMatrix
+        Translate:
+            xy: self.center_x, self.center_y
+        Rotate:
+            angle: 90 if ctx.item.orientation == 'horizontal' else 0
+            axis: 0, 0, 1
+        Translate:
+            xy: -self.center_x, -self.center_y
+    canvas.after:
+        PopMatrix
+
 <RootLayout>:
     # Need to add links from object ids to properties (which can be access via self. in python code)
     text_in1: text_in1 # Assigns the call of display_label to an identifier within kv file
@@ -14,7 +36,7 @@
                 id: accordion
                 orientation: "vertical"
                 size_hint_y: None # Need to set this to none in order to use scrollview in the respective direction (x and y)
-                height: 50*10 # 50px for every element 
+                height: 50*8 # 50px for every element 
             # Label:
             #     id: display_label
             #     text: 'really some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\n'

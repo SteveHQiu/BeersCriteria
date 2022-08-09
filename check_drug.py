@@ -29,7 +29,7 @@ def checkDrug(drug: str, std = True):
 
 def checkInterac(drugs: list[str], std = True):
     global DF_I
-    report = ""
+    interactions: list[tuple[str, str]] = []
     if std:
         drugs = [drugstandards.standardize([d])[0] for d in drugs]
         drugs = [d for d in drugs if d] # Filter empty data types
@@ -49,15 +49,13 @@ def checkInterac(drugs: list[str], std = True):
                         graph.add_edge(drug_cat, drug)
             max_match = hopcroft_karp_matching(graph, cols)
             if len(max_match)/2 >= len(cols): # Divide by 2 since max match output is undirected
-                drug_origin = {m: max_match[m] for m in max_match if "Drug" in m} # Filter for mappings with drug categories as key
+                drug_origin: dict[str, str] = {m: max_match[m] for m in max_match if "Drug" in m} # Filter for mappings with drug categories as key
+                offending_drugs: list[str] = [drug_origin[k] for k in drug_origin]
                 rec = row["Recommendation"]
                 rationale = row["Risk Rationale"]
-                rule_report = f"Drugs: {drug_origin}\nRecommendation: {rec}\nRationale: {rationale}\n---------------\n"
-                report += rule_report
-        # Can probably solve this more efficiently with Hall's theorem via graphs
-    if report:
-        return report
-    return "No interactions to report"
+                rule_report = f"Drugs: {drug_origin}\nRecommendation: {rec}\nRationale: {rationale}"
+                interactions.append((str(offending_drugs), rule_report))
+    return interactions
 
 if __name__ == "__main__":
     print(checkInterac(["Losartan", "Trandolapril"])) # Yes
