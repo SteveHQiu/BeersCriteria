@@ -2,15 +2,22 @@ import pandas as pd
 import json
 from pandas import DataFrame
 import timeit
+#%%
+if 1:
+    from functools import partial
+    basetwo = partial(int, base=2)
+    a = lambda *x: 10, 
+    print(a())
+#%%
+if 0:
+    from check_drug import checkInterac
+    items = ["LMAODRUG1"]
+    print(len(items))
+    start = timeit.default_timer()
+    print(checkInterac(items))
+    stop = timeit.default_timer()
 
-from check_drug import checkInterac
-items = ["LMAODRUG1"]
-print(len(items))
-start = timeit.default_timer()
-print(checkInterac(items))
-stop = timeit.default_timer()
-
-print('Time: ', stop - start) 
+    print('Time: ', stop - start) 
 
 
 if 0:

@@ -6,6 +6,8 @@ from kivy.uix.label import Label # Imports Label element
 from kivy.uix.boxlayout import BoxLayout # Imports layout call function which pulls from .kv file with the same name as the class that calls it
 from kivy.uix.widget import Widget
 from kivy.uix.textinput import TextInput
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.accordion import Accordion, AccordionItem
 
 import random
 
@@ -30,6 +32,8 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
         pass
     
     def checkBeers(self):
+        accordion: Accordion = self.ids.accordion # Use element with "accordion" id (doesn't need to be bound) to assign ScrollView object
+        scroll_view: ScrollView = self.ids.scroll_view
         text_in: str = self.text_in1.text
         if "\n" in text_in:
             print("Newline character detected")
@@ -39,6 +43,21 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
         drugs_std = [d for d in drugs_std if d] # Filter empty data types
         drugs_std = list(set(drugs_std)) # Screen out duplicates
         print("Standardized: ", drugs_std)
+        
+        accordion.clear_widgets() # Clear widgets before adding
+        ac_item = AccordionItem(title=f"{len(drugs_std)} standardized drugs found")
+        label = Label(text=f"{drugs_std} j a;ldkf laksj;d flakjsd;f lkaj;oeifjwapoifjp aodi faposidjfpaoijsdpfo aiwjpe foijwap oefijap oifjpa sodfo;wjae;lkjfoisjdpfo aijpeoqi awjepsofi japsoidjf paoisdfp o;kja;owijv opaoijdsoijafo wiejfp aiwjfp aks;dlkfj; awijefpo a",
+                      halign='left',
+                    #   text_size=(scroll_view.width, None),
+                      )
+        label = Label(text='blah blah '* 1000, size_hint=(1, None))
+        a = lambda *x: label.setter('text_size')
+        b = lambda *x: label.setter('text_size')(label, (label.width, None))
+        label.bind(width=lambda *x: label.setter('text_size')(label, (label.width, None)),
+        texture_size=lambda *x: label.setter('height')(label, label.texture_size[1]))
+        ac_item.add_widget(label)
+        accordion.add_widget(ac_item)
+        
         report = f"======Drug Screen======\nDrugs detected: {drugs_std}\n"
         for drug in drugs_std:
             drug_warning = checkDrug(drug, std=False)
@@ -46,7 +65,16 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
                 report += drug_warning + "\n---------------------\n" # Disable standardization to save computation
         report += "======Interactions======\n"
         report += checkInterac(drugs_std, std=False)
-        self.display_label.text = report
+        # self.ids.display_label.text = report
+        
+    def checkBeers1(self):
+        accordian: Accordion = self.ids.accordion # Use element with "accordion" id (doesn't need to be bound) to assign ScrollView object
+        for i in range(5):
+            ac_item = AccordionItem(title=f"Accordian item {i}")
+            ac_item.add_widget(Label(text=f"Some content of {i}"))
+            accordian.add_widget(ac_item)
+        print(self.ids.accordion)
+        
 
 
 
@@ -63,7 +91,8 @@ class BeersApp(App):
     """
     
     def build(self): # Returns the UI
-        return RootLayout() # Return whatever root element you are using for the UI
+        root = RootLayout()
+        return root # Return whatever root element you are using for the UI
         
 
 
