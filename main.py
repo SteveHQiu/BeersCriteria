@@ -9,6 +9,13 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.accordion import Accordion, AccordionItem
 
+# from kivy.config import Config
+# Config.set('graphics', 'width', '70')
+# Config.set('graphics', 'height', '150')
+
+from kivy.core.window import Window
+Window.size = (300, 500)
+
 import random
 
 # Test
@@ -23,21 +30,16 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
     def __init__(self, **kwargs):
         super(RootLayout, self).__init__(**kwargs) # Calls the superconstructor 
         self.cur_text = ""
-
-    def getGeneric(self):
-        text_in: str = self.text_in1.text
-        print(text_in)
-        generic = getGenericName(text_in)
-        self.display_label.text = generic
-        pass
     
     def checkBeers(self):
         accordion: Accordion = self.ids.accordion # Use element with "accordion" id (doesn't need to be bound) to assign ScrollView object
         scroll_view: ScrollView = self.ids.scroll_view
         text_in: str = self.text_in1.text
-        if "\n" in text_in:
-            print("Newline character detected")
-        drugs = text_in.split("\n")     
+        delimiters = ["\n", ",", ";"]
+        drugs = [text_in]
+        for delim in delimiters:
+            drugs = [txt.split(delim) for txt in drugs]
+            drugs = sum(drugs, []) # flatten list
         print("Input texts: ", drugs)
         drugs_std = [drugstandards.standardize([d])[0] for d in drugs]
         drugs_std = [d for d in drugs_std if d] # Filter empty data types

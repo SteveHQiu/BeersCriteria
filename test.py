@@ -2,8 +2,18 @@ import pandas as pd
 import json
 from pandas import DataFrame
 import timeit
-#%% Partials
+#%%
 if 1:
+    text_in = "test, lmao\neyy, bar, also foo; test2"
+    delimiters = ["\n", ",", ";"]
+    drugs = [text_in]
+    for delim in delimiters:
+        drugs = [txt.split(delim) for txt in drugs]
+        drugs = sum(drugs, []) # flatten list
+    print(drugs)
+
+#%% Partials
+if 0:
     from functools import partial
     fx = partial(int, base=2)
     a = lambda *x: fx("10101")
