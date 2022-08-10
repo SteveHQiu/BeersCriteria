@@ -1,0 +1,29 @@
+﻿Drug,Creatinine Clearance,Rationale,Recommendation
+Ciprofloxacin,<30,"Increased risk of CNS effects (eg, seizures, confusion) and tendon rupture",Doses used to treat common infections typically require reduction when CrCl <30 mL/min
+Trimethoprim-sulfamethoxazole,<30,Increased risk of worsening of renal function and hyperkalemia,"Reduce dose if CrCl 15-29 mL/min
+Avoid if CrCl <15 mL/min"
+Amiloride,<30,Increased potassium and decreased sodium,Avoid
+Apixaban,<25,Lack of evidence for efficacy and safety in patients with a CrCl <25 mL/min,Avoid
+Dabigatran,<30,Lack of evidence for efficacy and safety in individuals with a CrCl <30 mL/min. Label dose for patients with a CrCl 15-30 mL/min based on pharmacokinetic data,Avoid; dose adjustment advised when CrCl >30 mL/min in the presence of drug-drug interactions
+Dofetilide,<60,QTc prolongation and torsade de pointes,"Reduce dose if CrCl 20-59 mL/min
+Avoid if CrCl <20 mL/min"
+Edoxaban,"<15, >95",Lack of evidence of efficacy or safety in patients with a CrCl <30 mL/min,Avoid
+Edoxaban,15-50,Lack of evidence of efficacy or safety in patients with a CrCl <30 mL/min,Reduce dose
+Enoxaparin,<30,Increased risk of bleeding,Reduce dose
+Fondaparinux,<30,Increased risk of bleeding,Avoid
+Rivaroxaban,<50,Lack of efficacy or safety evidence in patients with a CrCl <30 mL/min,"Nonvalvular atrial fibrillation: reduce dose if CrCl 15-50 mL/min; avoid if CrCl <15 mL/min
+Venous thromboembolism treatment and for VTE prophylaxis with hip or knee replacement: avoid if CrCl <30 mL/min"
+Spironolactone,<30,Increased potassium,Avoid
+Triamterene,<30,Increased potassium and decreased sodium,Avoid
+Duloxetine,<30,"Increased gastrointestinal adverse effects (nausea, diarrhea)",Avoid
+Gabapentin,<60,CNS adverse effects,Reduce dose
+Levetiracetam,≤80,CNS adverse effects,Reduce dose
+Pregabalin,<60,CNS adverse effects,Reduce dose
+Tramadol,<30,CNS adverse effects,"Immediate release: reduce dose
+Extended release: avoid"
+Cimetidine,<50,Mental status changes,Reduce dose
+Famotidine,<50,Mental status changes,Reduce dose
+Nizatidine,<50,Mental status changes,Reduce dose
+Ranitidine,<50,Mental status changes,Reduce dose
+Colchicine,<30,"Gastrointestinal, neuromuscular, bone marrow toxicity",Reduce dose; monitor for adverse effects
+Probenecid,<30,Loss of effectiveness,Avoid

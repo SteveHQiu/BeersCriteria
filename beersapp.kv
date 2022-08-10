@@ -1,27 +1,5 @@
 #:kivy 2.1.0
 
-[CustTitle@Label]: # Define a custom title template for the accordion items to modify title alignment
-    text: ctx.title
-    text_size: self.width - dp(10), None # Constrain to size to width so that text (already left aligned) shifts to edge
-    canvas.before:
-        Color:
-            rgb: 1, 1, 1
-        BorderImage:
-            source:
-                ctx.item.background_normal                         if ctx.item.collapse                         else ctx.item.background_selected
-            pos: self.pos
-            size: self.size
-        PushMatrix
-        Translate:
-            xy: self.center_x, self.center_y
-        Rotate:
-            angle: 90 if ctx.item.orientation == 'horizontal' else 0
-            axis: 0, 0, 1
-        Translate:
-            xy: -self.center_x, -self.center_y
-    canvas.after:
-        PopMatrix
-
 <RootLayout>:
     # Need to add links from object ids to properties (which can be access via self. in python code)
     text_in1: text_in1 # Assigns the call of display_label to an identifier within kv file
@@ -35,6 +13,11 @@
                 id: text_in1 # ID assigns the identifier of this object in the root object in python (i.e., RootLayout)
                 height: 10
             Button:
+                text: "Test"
+                height: 10
+                size_hint_x: 0.2
+                on_press: root.testFx()
+            Button:
                 text: "Check\ndrugs"
                 height: 10
                 size_hint_x: 0.2
@@ -43,18 +26,13 @@
             id: scroll_view
             do_scroll_x: False
             do_scroll_y: True
-            Accordion:
-                id: accordion
-                orientation: "vertical"
+            TreeView:
+                id: tree_view
+                hide_root: True
                 size_hint_y: None # Need to set this to none in order to use scrollview in the respective direction (x and y)
-                height: 50*8 # 50px for every element 
-            # Label:
-            #     id: display_label
-            #     text: 'really some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\nreally some amazing text\n'
-            #     text_size: self.size[0], None  # Text wrapping around x-axis, None for y-axis to allow infinite output size
-            #     halign: 'left'
-            #     valign: 'middle'
-            #     padding: 10, 10
+                height: self.minimum_height # Bind height (used for scroll) to minimum_height which changes when children are expanded
+            # Accordion:
+            #     id: accordion
+            #     orientation: "vertical"
             #     size_hint_y: None # Need to set this to none in order to use scrollview in the respective direction (x and y)
-            #     size: self.texture_size  # Need this to set size
-            #     # font_size: 64
+            #     height: 50*8 # 50px for every element 

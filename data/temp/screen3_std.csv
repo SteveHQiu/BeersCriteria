@@ -1,0 +1,29 @@
+Drug,Creatinine Clearance,Rationale,Recommendation,ExStandardized
+Ciprofloxacin,<30,"Increased risk of CNS effects (eg, seizures, confusion) and tendon rupture",Doses used to treat common infections typically require reduction when CrCl <30 mL/min,CIPROFLOXACIN
+Trimethoprim-sulfamethoxazole,<30,Increased risk of worsening of renal function and hyperkalemia,"Reduce dose if CrCl 15-29 mL/min
+Avoid if CrCl <15 mL/min",TRIMETHOPRIM
+Amiloride,<30,Increased potassium and decreased sodium,Avoid,AMILORIDE
+Apixaban,<25,Lack of evidence for efficacy and safety in patients with a CrCl <25 mL/min,Avoid,APIXABAN
+Dabigatran,<30,Lack of evidence for efficacy and safety in individuals with a CrCl <30 mL/min. Label dose for patients with a CrCl 15-30 mL/min based on pharmacokinetic data,Avoid; dose adjustment advised when CrCl >30 mL/min in the presence of drug-drug interactions,DABIGATRAN ETEXILATE
+Dofetilide,<60,QTc prolongation and torsade de pointes,"Reduce dose if CrCl 20-59 mL/min
+Avoid if CrCl <20 mL/min",DOFETILIDE
+Edoxaban,"<15, >95",Lack of evidence of efficacy or safety in patients with a CrCl <30 mL/min,Avoid,
+Edoxaban,15-50,Lack of evidence of efficacy or safety in patients with a CrCl <30 mL/min,Reduce dose,
+Enoxaparin,<30,Increased risk of bleeding,Reduce dose,ENOXAPARIN
+Fondaparinux,<30,Increased risk of bleeding,Avoid,FONDAPARINUX SODIUM
+Rivaroxaban,<50,Lack of efficacy or safety evidence in patients with a CrCl <30 mL/min,"Nonvalvular atrial fibrillation: reduce dose if CrCl 15-50 mL/min; avoid if CrCl <15 mL/min
+Venous thromboembolism treatment and for VTE prophylaxis with hip or knee replacement: avoid if CrCl <30 mL/min",RIVAROXABAN
+Spironolactone,<30,Increased potassium,Avoid,SPIRONOLACTONE
+Triamterene,<30,Increased potassium and decreased sodium,Avoid,TRIAMTERENE
+Duloxetine,<30,"Increased gastrointestinal adverse effects (nausea, diarrhea)",Avoid,DULOXETINE
+Gabapentin,<60,CNS adverse effects,Reduce dose,GABAPENTIN
+Levetiracetam,≤80,CNS adverse effects,Reduce dose,LEVETIRACETAM
+Pregabalin,<60,CNS adverse effects,Reduce dose,PREGABALIN
+Tramadol,<30,CNS adverse effects,"Immediate release: reduce dose
+Extended release: avoid",TRAMADOL
+Cimetidine,<50,Mental status changes,Reduce dose,CIMETIDINE
+Famotidine,<50,Mental status changes,Reduce dose,FAMOTIDINE
+Nizatidine,<50,Mental status changes,Reduce dose,NIZATIDINE
+Ranitidine,<50,Mental status changes,Reduce dose,RANITIDINE
+Colchicine,<30,"Gastrointestinal, neuromuscular, bone marrow toxicity",Reduce dose; monitor for adverse effects,COLCHICINE
+Probenecid,<30,Loss of effectiveness,Avoid,PROBENECID

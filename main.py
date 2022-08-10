@@ -8,19 +8,19 @@ from kivy.uix.widget import Widget
 from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.accordion import Accordion, AccordionItem
+from kivy.uix.treeview import TreeView, TreeViewLabel
 
 # from kivy.config import Config
 # Config.set('graphics', 'width', '70')
 # Config.set('graphics', 'height', '150')
 
-from kivy.core.window import Window
-Window.size = (300, 500)
+# from kivy.core.window import Window
+# Window.size = (300, 500)
 
 import random
 
 # Test
 # Internals 
-from standardization import getGenericName
 import drugstandards
 from check_drug import checkDrug, checkInterac
 
@@ -32,8 +32,8 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
         self.cur_text = ""
     
     def checkBeers(self):
-        accordion: Accordion = self.ids.accordion # Use element with "accordion" id (doesn't need to be bound) to assign ScrollView object
-        scroll_view: ScrollView = self.ids.scroll_view
+        tree_view: TreeView = self.ids.tree_view
+        scroll_view: ScrollView = self.ids.scroll_view # Use element with "accordion" id (doesn't need to be bound) to assign ScrollView object
         text_in: str = self.text_in1.text
         delimiters = ["\n", ",", ";"]
         drugs = [text_in]
@@ -46,36 +46,25 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
         drugs_std = list(set(drugs_std)) # Screen out duplicates
         print("Standardized: ", drugs_std)
         
-        accordion.clear_widgets() # Clear widgets before adding
-        ac_item = AccordionItem(title=f"{len(drugs_std)} standardized drugs found", title_template="CustTitle")
-        label = WrappedLabel(text=f"{drugs_std}", halign='left')
-        ac_item.add_widget(label)
-        accordion.add_widget(ac_item)
+        for node in [i for i in tree_view.iterate_all_nodes()]:
+            tree_view.remove_node(node) # Clear nodes
+        l1_node = tree_view.add_node(TreeViewLabel(text=f"{len(drugs_std)} standardized drugs found"))
+        tree_view.add_node(TreeViewLabel(text=f"{drugs_std}"), l1_node)
         
         # Drug screening
         for drug in drugs_std:
             drug_warning = checkDrug(drug, std=False)
             if drug_warning:
-                ac_item = AccordionItem(title=f"Potential issues with {drug}", title_template="CustTitle")
-                label = WrappedLabel(text=f"{drug_warning}", halign='left')
-                ac_item.add_widget(label)
-                accordion.height += 50 # Add room to accordion to accomodate new item
-                accordion.add_widget(ac_item)
+                l1_node = tree_view.add_node(TreeViewLabel(text=f"Potential issues with {drug}"))
+                tree_view.add_node(TreeViewLabel(text=f"{drug_warning}"), l1_node)
         # Interaction reporting
         for offending_drugs, report in checkInterac(drugs_std, std=False):
-            ac_item = AccordionItem(title=f"Interaction between {offending_drugs}", title_template="CustTitle")
-            label = WrappedLabel(text=f"{report}", halign='left')
-            ac_item.add_widget(label)
-            accordion.height += 50 #  Add room to accordion to accomodate new item
-            accordion.add_widget(ac_item)
+            l1_node = tree_view.add_node(TreeViewLabel(text=f"Interaction between {offending_drugs}"))
+            tree_view.add_node(TreeViewLabel(text=f"{report}"), l1_node)
         
-    def checkBeers1(self):
-        accordian: Accordion = self.ids.accordion # Use element with "accordion" id (doesn't need to be bound) to assign ScrollView object
-        for i in range(5):
-            ac_item = AccordionItem(title=f"Accordian item {i}")
-            ac_item.add_widget(Label(text=f"Some content of {i}"))
-            accordian.add_widget(ac_item)
-        print(self.ids.accordion)
+    def testFx(self):
+        obj: TreeView = self.ids.tree_view
+        print(obj.height)
         
 
 class WrappedLabel(Label):
