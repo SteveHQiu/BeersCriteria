@@ -3,7 +3,15 @@ import json
 from pandas import DataFrame
 import timeit
 #%%
-if 1:
+import pickle
+with open("data/synonyms.dat", "rb") as file:
+    drugdict: dict = pickle.load(file, encoding="utf-8")
+
+with open("data/drugdict.json", "w+") as file:
+    json.dump(drugdict, file)
+
+#%%
+if 0:
     text_in = "test, lmao\neyy, bar, also foo; test2"
     delimiters = ["\n", ",", ";"]
     drugs = [text_in]
