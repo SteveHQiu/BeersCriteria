@@ -5,7 +5,7 @@ INFINITY = float("inf")
 
 class CGraph:
     def __init__(self) -> None:
-        self.data: dict[Hashable, set[Hashable]] = {"a": {"b"}, "b": {"a"}}
+        self.data: dict[Hashable, set[Hashable]] = dict()
         self.set1: set[Hashable] = set()
         self.set2: set[Hashable] = set()
     
@@ -126,9 +126,14 @@ class CDataFrame:
         else:
             self.columns = []
             self.rows = []
+            
+    def __len__(self):
+        return len(self.rows) # Gets number of entries/rows
     
     def __getitem__(self, key: str):
         ind = self.columns[key] # Convert column label to index
+        if len(self) == 1: # For DF with one entry (i.e., a row)
+            return self.rows[0][ind] # Get first row, then get corresponding column 
         return [row[ind] for row in self.rows]
     
     def __setitem__(self, key: str, values: list):
@@ -139,6 +144,7 @@ class CDataFrame:
         else: # Assume values is scalar
             for i, row in enumerate(self.rows):
                 row[ind] = values
+    
         
     
     def read_csv(self, csv_path):

@@ -1,13 +1,11 @@
-import os
-
 import kivy
 from kivy.app import App
 from kivy.uix.label import Label # Imports Label element
 from kivy.uix.boxlayout import BoxLayout # Imports layout call function which pulls from .kv file with the same name as the class that calls it
-from kivy.uix.widget import Widget
-from kivy.uix.textinput import TextInput
+# from kivy.uix.widget import Widget
+# from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
-from kivy.uix.accordion import Accordion, AccordionItem
+# from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.treeview import TreeView, TreeViewLabel
 
 # from kivy.config import Config
@@ -54,11 +52,11 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
             drug_warning = checkDrug(drug, std=False)
             if drug_warning:
                 l1_node = tree_view.add_node(TreeViewLabel(text=f"Potential issues with {drug}"))
-                tree_view.add_node(TreeViewLabel(text=f"{drug_warning}"), l1_node)
+                tree_view.add_node(TreeViewLabel(text=f"{drug_warning}", markup=True), l1_node)
         # Interaction reporting
         for offending_drugs, report in checkInterac(drugs_std, std=False):
             l1_node = tree_view.add_node(TreeViewLabel(text=f"Interaction between {offending_drugs}"))
-            tree_view.add_node(TreeViewLabel(text=f"{report}"), l1_node)
+            tree_view.add_node(TreeViewLabel(text=f"{report}", markup=True), l1_node)
         
     def testFx(self):
         obj: TreeView = self.ids.tree_view

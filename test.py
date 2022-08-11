@@ -43,7 +43,9 @@ class CDataFrame:
         else: # Assume values is scalar
             for i, row in enumerate(self.rows):
                 row[ind] = values
-        
+    
+    def __len__(self):
+        return len(self.rows) # Gets number of entries/rows
     
     def read_csv(self, csv_path):
             with open(csv_path, "r", encoding="utf-8-sig") as file: # utf-8-sig to strip off weird characters at beginning of csv
@@ -84,8 +86,10 @@ b = a.findRows("Properties", "prop3")
 c = a.findRows("Other", "other2")
 print(b.columns)
 print(b.rows)
+print(len(b))
 print(c.columns)
 print(c.rows)
+print(len(c))
 d = a.findRows("Other", "sts")
 print(d.columns)
 print(d.rows)

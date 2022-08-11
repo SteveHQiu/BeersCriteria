@@ -1,12 +1,10 @@
 import json
 
-import pandas as pd
-
 import drugstd
 from custom_libs import CGraph, hopcroft_karp_matching, CDataFrame
 
-DF_S = pd.read_csv(R"data\screen_std.csv")
-DF_I = pd.read_csv(R"data\interac_std.csv")
+DF_S = CDataFrame(csv_path=R"data\screen_std.csv")
+DF_I = CDataFrame(csv_path=R"data\interac_std.csv")
 
 INFINITY = float("inf")
 
@@ -14,16 +12,27 @@ def checkDrug(drug: str, std = True):
     global DF_S    
     if std:
         drug = drugstd.standardize([drug])[0]
-    if drug in list(DF_S["ExStandardized"]):
-        entry = DF_S.loc[DF_S["ExStandardized"] == drug] # Take first item
-        entry = entry.reset_index(drop=True) # Reset index to access by labels rather than relative positions
+    if drug in DF_S["ExStandardized"]:
+        entry = DF_S.findRows("ExStandardized", drug) # Take first item
         print(f"Found {len(entry)} entries")
-        if len(entry) > 1:
-            print(entry.nunique())
-        drug_origin = entry.at[0, "Drug"]
-        rec = entry.at[0, "Recommendation"]
-        rationale = entry.at[0, "Rationale"]
-        report = f"Beers entry: {drug_origin}\nRecommendation: {rec}\nRationale: {rationale}"
+        report = ""
+        for ind, row in entry.iterrows():
+            drug_origin = row["Drug"]
+            rec = row["Recommendation"]
+            rationale = row["Rationale"]
+            condition = row["Condition"]
+            creatinine = row["Creatinine Clearance"]
+            if drug_origin and type(drug_origin) == str:
+                report += f"[b]Drug[/b]: {drug_origin}\n"
+            if condition and type(condition) == str:
+                report += f"[b]Condition[/b]: {condition}\n"
+            if creatinine and type(creatinine) == str:
+                report += f"[b]Creatinine clearance threshold[/b]: {creatinine}\n"
+            if rec and type(rec) == str:
+                report += f"[b]Recommendation[/b]: {rec}\n"
+            if rationale and type(rationale) == str:
+                report += f"[b]Rationale[/b]: {rationale}\n"
+            report += "[b]====================[/b]\n\n"
         return report
     return ""
 
@@ -36,7 +45,7 @@ def checkInterac(drugs: list[str], std = True):
     if len(drugs) > 1:        
         for index, row in DF_I.iterrows():
             cols = ["Drug 1", "Drug 2", "Drug 3"]
-            cols = [col for col in cols if type(row[col]) == str] # Default cell value is float of nan, only parse strings 
+            cols = [col for col in cols if row[col] and type(row[col]) == str] # Filter for non-empty strings
             
             graph = CGraph()
             graph.add_nodes_from(cols, bipartite=0)
@@ -55,7 +64,7 @@ def checkInterac(drugs: list[str], std = True):
                 offending_drugs: list[str] = [drug_origin[k] for k in drug_origin]
                 rec = row["Recommendation"]
                 rationale = row["Risk Rationale"]
-                rule_report = f"Drugs: {drug_origin}\nRecommendation: {rec}\nRationale: {rationale}"
+                rule_report = f"[b]Drugs[/b]: {drug_origin}\n[b]Recommendation[/b]: {rec}\n[b]Rationale[/b]: {rationale}"
                 interactions.append((str(offending_drugs), rule_report))
     return interactions
 
