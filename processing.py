@@ -3,7 +3,7 @@ import re, json, os
 import pandas as pd
 from pandas import DataFrame
 from math import nan
-import drugstandards as drugs # Import local version
+import drugstd as drugs # Import local version
 
 
 

@@ -1,14 +1,60 @@
+from typing import Hashable
 import pandas as pd
 import json
 from pandas import DataFrame
 import timeit
 #%%
-import pickle
-with open("data/synonyms.dat", "rb") as file:
-    drugdict: dict = pickle.load(file, encoding="utf-8")
+import networkx as nx
 
-with open("data/drugdict.json", "w+") as file:
-    json.dump(drugdict, file)
+
+class CGraph:
+    def __init__(self) -> None:
+        self.data: dict[Hashable, set[Hashable]] = {"a": {"b"}, "b": {"a"}}
+        self.set1: set[Hashable] = set()
+        self.set2: set[Hashable] = set()
+    
+    def __getitem__(self, key):
+        return self.data[key]
+    
+    def __setitem__(self, key, value):
+        self.data[key] = value
+    
+    def add_nodes_from(self, nodes: list[Hashable], bipartite=-1):
+        for node in nodes:
+            self.add_node(node, bipartite=bipartite)
+    
+    def add_node(self, node: Hashable, bipartite=-1):
+        self.data[node] = set()
+        if bipartite == 0:
+            self.set1.add(node)
+        if bipartite == 1:
+            self.set2.add(node)
+        return node
+    
+    def add_edge(self, u_of_edge: Hashable, v_of_edge: Hashable):
+        if u_of_edge not in self.data:
+            self.data[u_of_edge] = set()
+        if v_of_edge not in self.data:
+            self.data[v_of_edge] = set()
+        self.data[u_of_edge].add(v_of_edge)
+        self.data[v_of_edge].add(u_of_edge)
+    
+    def bipartite_sets(self):
+        return (self.set1, self.set2)
+
+G = nx.Graph()
+G.add_edge("a", "b")
+G.add_edge("c", "b")
+G.add_edge("d", "e")
+print(list(G.nodes))
+print(G["b"])
+
+G = CGraph()
+G.add_edge("a", "b")
+G.add_edge("c", "b")
+G.add_edge("d", "e")
+print(G["b"])
+
 
 #%%
 if 0:

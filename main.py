@@ -21,7 +21,7 @@ import random
 
 # Test
 # Internals 
-import drugstandards
+import drugstd
 from check_drug import checkDrug, checkInterac
 
 
@@ -41,7 +41,7 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
             drugs = [txt.split(delim) for txt in drugs]
             drugs = sum(drugs, []) # flatten list
         print("Input texts: ", drugs)
-        drugs_std = [drugstandards.standardize([d])[0] for d in drugs]
+        drugs_std = [drugstd.standardize([d])[0] for d in drugs]
         drugs_std = [d for d in drugs_std if d] # Filter empty data types
         drugs_std = list(set(drugs_std)) # Screen out duplicates
         print("Standardized: ", drugs_std)
