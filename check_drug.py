@@ -1,15 +1,27 @@
-import json
+import json, pickle
 
 import drugstd
 from custom_libs import CGraph, hopcroft_karp_matching, CDataFrame
 
-DF_S = CDataFrame(csv_path=R"data\screen_std.csv")
-DF_I = CDataFrame(csv_path=R"data\interac_std.csv")
+# Serialize files (On PC)
+# with open("data/screen_std.dat", "w+b") as file:
+#     DF_S = CDataFrame(csv_path="data/screen_std.csv")
+#     pickle.dump(DF_S, file)
+
+# with open("data/interac_std.dat", "w+b") as file:
+#     DF_I = CDataFrame(csv_path="data/interac_std.csv")
+#     pickle.dump(DF_I, file)
+    
+# Load
+with open("data/screen_std.dat", "rb") as file:
+    DF_S = pickle.load(file)
+
+with open("data/interac_std.dat", "rb") as file:
+    DF_I = pickle.load(file)
 
 INFINITY = float("inf")
 
 def checkDrug(drug: str, std = True):
-    global DF_S    
     if std:
         drug = drugstd.standardize([drug])[0]
     if drug in DF_S["ExStandardized"]:
@@ -37,7 +49,6 @@ def checkDrug(drug: str, std = True):
     return ""
 
 def checkInterac(drugs: list[str], std = True):
-    global DF_I
     interactions: list[tuple[str, str]] = []
     if std:
         drugs = [drugstd.standardize([d])[0] for d in drugs]

@@ -1,3 +1,5 @@
+import pickle
+
 import kivy
 from kivy.app import App
 from kivy.uix.label import Label # Imports Label element
@@ -19,7 +21,7 @@ from kivy.uix.treeview import TreeView, TreeViewLabel
 # Internals 
 import drugstd
 from check_drug import checkDrug, checkInterac
-
+from custom_libs import CDataFrame
 
 
 class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayout class 
@@ -58,9 +60,18 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
             l1_node = tree_view.add_node(TreeViewLabel(text=f"Interaction between {offending_drugs}"))
             tree_view.add_node(TreeViewLabel(text=f"{report}", markup=True), l1_node)
         
-    def testFx(self):
-        obj: TreeView = self.ids.tree_view
-        print(obj.height)
+    def testFx1(self):
+        a = CDataFrame()
+    def testFx2(self):
+        a = CDataFrame({"col1":["1", "2", "3"], "col2":["1", "2", "3"]})
+    def testFx3(self):
+        with open("data/screen_std.dat", "rb") as file:
+            a = pickle.load(file)
+        print(a.columns)
+    def testFx4(self):
+        with open("data/interac_std.dat", "rb") as file:
+            a = pickle.load(file)
+        print(a.columns)
         
 
 class WrappedLabel(Label):

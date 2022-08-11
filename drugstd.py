@@ -4,7 +4,7 @@ from difflib import SequenceMatcher
 
     
 with open("data/drugdict.json", "r") as file:
-    drugdict: dict = json.load(file)
+    DRUGDICT: dict = json.load(file)
 
   
 def find_closest_string(query, dictionary, thresh=0.85):
@@ -33,13 +33,13 @@ def standardize(druglist, thresh=0.85):
     for drug in druglist:
         drug = drug.upper()
         drug = " ".join(splitter.split(drug)).strip()
-        gen = drugdict.get(drug)
+        gen = DRUGDICT.get(drug)
         if gen:
             standardized_druglist.append(gen)
             continue
         else:
-            close_match = find_closest_string(str(drug), drugdict.keys(), thresh=thresh)
-            close_match = drugdict.get(close_match)
+            close_match = find_closest_string(str(drug), DRUGDICT.keys(), thresh=thresh)
+            close_match = DRUGDICT.get(close_match)
             standardized_druglist.append(close_match)
     return standardized_druglist
 

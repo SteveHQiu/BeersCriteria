@@ -77,28 +77,15 @@ class CDataFrame:
 a = CDataFrame({"Drug": ["drug1", "drug2", "drug3", "drug4"],
                 "Properties": ["prop1", "prop2", "prop3", "prop3"],
                 "Other": ["other2", "other2", "other3", "other4"]})
-print(a.columns)
-print(a.rows)
-print(a["Drug"][1])
-print(a["Properties"][1])
-print(a["Other"][1])
-b = a.findRows("Properties", "prop3")
-c = a.findRows("Other", "other2")
-print(b.columns)
-print(b.rows)
-print(len(b))
-print(c.columns)
-print(c.rows)
-print(len(c))
-d = a.findRows("Other", "sts")
-print(d.columns)
-print(d.rows)
-    
-for ind, row in a.iterrows():
-    print(ind)
-    print(row.columns)
-    print(row.rows)
+DF_I = CDataFrame(csv_path=R"data\interac_std.csv")
+DF_S = CDataFrame(csv_path=R"data\screen_std.csv")
+import pickle
+with open("screen_std.dat", "w+b") as file:
+    pickle.dump(DF_S, file)
 
+with open("screen_std.dat", "rb") as file: 
+    df = pickle.load(file)
+print(df.columns)
 
 #%% Budget networkx
 if 0:
