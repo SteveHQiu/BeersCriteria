@@ -17,8 +17,6 @@ from kivy.uix.treeview import TreeView, TreeViewLabel
 # from kivy.core.window import Window
 # Window.size = (300, 500)
 
-import random
-
 # Test
 # Internals 
 import drugstd

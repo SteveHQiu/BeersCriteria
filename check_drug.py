@@ -1,13 +1,13 @@
-import json, collections, itertools
-from typing import Hashable
+import json
 
 import pandas as pd
 
-
 import drugstd
+from custom_libs import CGraph, hopcroft_karp_matching, CDataFrame
 
 DF_S = pd.read_csv(R"data\screen_std.csv")
 DF_I = pd.read_csv(R"data\interac_std.csv")
+
 INFINITY = float("inf")
 
 def checkDrug(drug: str, std = True):
@@ -59,105 +59,7 @@ def checkInterac(drugs: list[str], std = True):
                 interactions.append((str(offending_drugs), rule_report))
     return interactions
 
-class CGraph:
-    def __init__(self) -> None:
-        self.data: dict[Hashable, set[Hashable]] = {"a": {"b"}, "b": {"a"}}
-        self.set1: set[Hashable] = set()
-        self.set2: set[Hashable] = set()
-    
-    def __getitem__(self, key):
-        return self.data[key]
-    
-    def __setitem__(self, key, value):
-        self.data[key] = value
-    
-    def add_nodes_from(self, nodes: list[Hashable], bipartite=-1):
-        for node in nodes:
-            self.add_node(node, bipartite=bipartite)
-    
-    def add_node(self, node: Hashable, bipartite=-1):
-        self.data[node] = set()
-        if bipartite == 0:
-            self.set1.add(node)
-        if bipartite == 1:
-            self.set2.add(node)
-        return node
-    
-    def add_edge(self, u_of_edge: Hashable, v_of_edge: Hashable):
-        if u_of_edge not in self.data:
-            self.data[u_of_edge] = set()
-        if v_of_edge not in self.data:
-            self.data[v_of_edge] = set()
-        self.data[u_of_edge].add(v_of_edge)
-        self.data[v_of_edge].add(u_of_edge)
-    
-    def bipartite_sets(self):
-        return (self.set1, self.set2)
 
-
-def hopcroft_karp_matching(G: CGraph, *args):
-    # First we define some auxiliary search functions.
-    #
-    # If you are a human reading these auxiliary search functions, the "global"
-    # variables `leftmatches`, `rightmatches`, `distances`, etc. are defined
-    # below the functions, so that they are initialized close to the initial
-    # invocation of the search functions.
-    def breadth_first_search():
-        for v in left:
-            if leftmatches[v] is None:
-                distances[v] = 0
-                queue.append(v)
-            else:
-                distances[v] = INFINITY
-        distances[None] = INFINITY
-        while queue:
-            v = queue.popleft()
-            if distances[v] < distances[None]:
-                for u in G[v]:
-                    if distances[rightmatches[u]] is INFINITY:
-                        distances[rightmatches[u]] = distances[v] + 1
-                        queue.append(rightmatches[u])
-        return distances[None] is not INFINITY
-
-    def depth_first_search(v):
-        if v is not None:
-            for u in G[v]:
-                if distances[rightmatches[u]] == distances[v] + 1:
-                    if depth_first_search(rightmatches[u]):
-                        rightmatches[u] = v
-                        leftmatches[v] = u
-                        return True
-            distances[v] = INFINITY
-            return False
-        return True
-
-    # Initialize the "global" variables that maintain state during the search.
-    left, right = G.bipartite_sets()
-    leftmatches = {v: None for v in left}
-    rightmatches = {v: None for v in right}
-    distances = {}
-    queue = collections.deque()
-
-    # Implementation note: this counter is incremented as pairs are matched but
-    # it is currently not used elsewhere in the computation.
-    num_matched_pairs = 0
-    while breadth_first_search():
-        for v in left:
-            if leftmatches[v] is None:
-                if depth_first_search(v):
-                    num_matched_pairs += 1
-
-    # Strip the entries matched to `None`.
-    leftmatches = {k: v for k, v in leftmatches.items() if v is not None}
-    rightmatches = {k: v for k, v in rightmatches.items() if v is not None}
-
-    # At this point, the left matches and the right matches are inverses of one
-    # another. In other words,
-    #
-    #     leftmatches == {v, k for k, v in rightmatches.items()}
-    #
-    # Finally, we combine both the left matches and right matches.
-    return dict(itertools.chain(leftmatches.items(), rightmatches.items()))
 
 
 if __name__ == "__main__":
