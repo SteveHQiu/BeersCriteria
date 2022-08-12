@@ -6,10 +6,7 @@ from pandas import DataFrame
 import timeit
 
 #%%
-try: 
-    print(float(""))
-except ValueError:
-    print("Not a number")
+print(list({"a":1, "b":2}))
 
 #%% Checking inequalities
 if 0:

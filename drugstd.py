@@ -15,7 +15,7 @@ def find_closest_string(query, dictionary, thresh=0.85):
     """
     # dist = {i:Levenshtein.jaro_winkler(query, i) for i in dictionary}
     dist = {i: SequenceMatcher(a=query, b=i).ratio() for i in dictionary}
-    dist = sorted(dist.items(), key=operator.itemgetter(1), reverse=True)
+    dist = sorted(dist.items(), key=operator.itemgetter(1), reverse=True) # Sorted is more efficient than max function
     if dist[0][1] >= thresh:
         return dist[0][0]
     else:
@@ -44,5 +44,8 @@ def standardize(druglist, thresh=0.85):
     return standardized_druglist
 
 if __name__ == "__main__":
+    import time 
+    start_time = time.time()
     print(standardize(["aspiren"]))
     print(standardize(["test"]))
+    print("--- %s seconds ---" % (time.time() - start_time))

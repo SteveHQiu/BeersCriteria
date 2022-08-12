@@ -1,4 +1,5 @@
-import pickle
+import pickle, json
+from difflib import SequenceMatcher
 
 import kivy
 from kivy.app import App
@@ -10,6 +11,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.treeview import TreeView, TreeViewLabel
+from kivy.factory import Factory
 
 # from kivy.config import Config
 # Config.set('graphics', 'width', '70')
@@ -24,6 +26,8 @@ import drugstd
 from check_drug import checkDrug, checkInterac
 from custom_libs import CDataFrame
 
+with open("data/drugdict.json", "r") as file:
+    DICT: dict = json.load(file)
 
 class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayout class 
     def __init__(self, **kwargs):
@@ -83,16 +87,72 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
         print(a.columns)
         
 
-class WrappedLabel(Label):
+
+class CButton(Button):
+    pass
+
+class CScrollView(ScrollView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.padding_x = 10
-        self.bind(width=lambda *x: self.setter('text_size')(self, (self.width, None)), 
-                texture_size=lambda *x: self.setter('height')(self, self.texture_size[1]))
-        # Binds the changes in one property to the setter of another property such that every time kivy tries to change the anchor property, it will also pass the new property value (or some aspect of it) to the setter of the linked property
+        self.id = "testid"
+    pass
 
+class AutoCompleter(TextInput):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        
+    suggestions = Factory.ListProperty()
+    container = Factory.ObjectProperty()
 
-
+    def on_text(self, _, text: str):
+        text = text.upper()
+        matches = []
+        for word in DICT:
+            if text in word:
+                matches.append(word)
+        dict_dist = {i: SequenceMatcher(a=text, b=i).ratio() for i in matches}
+        list_dist = sorted(dict_dist.items(), key=lambda x: x[1], reverse=True) # Sort by value
+        top_matches = list_dist[:5] # Take top 5
+        self.suggestions = [i[0] for i in top_matches] # Fetch strs from distance tuples
+        
+    def on_suggestions(self, _, suggestions): # Runs every time the previously defined suggestions Factory.ListProperty() property updates
+        parent_layout: BoxLayout = self.parent
+        sibling_nodes: list = list(parent_layout.children)
+        widget_index = sibling_nodes.index(self)
+        cscrollviews = [l for l in parent_layout.children if type(l) == CScrollView]
+        if cscrollviews: # Check if there are already scroll views
+            cscrollview = cscrollviews[0] # Take first scrollview 
+        else:
+            cscrollview = CScrollView()
+            parent_layout.add_widget(cscrollview, index=widget_index) # Can add widget with size_hint_y/x: 0 if you want to add to top with index
+        container = cscrollview.ids.button_box
+        container.clear_widgets()
+        if not container: # Safeguard to check if container was instantiated 
+            return
+        # container.clear_widgets()
+        for word in suggestions:
+            btn = CButton(text=word,
+                on_press=self.select_word,
+                size_hint_x=None)
+            container.add_widget(btn)
+            
+    def select_word(self, btn):
+        parent_layout: BoxLayout = self.parent
+        cscrollviews = [l for l in parent_layout.children if type(l) == CScrollView]
+        
+        # Function of each button starts here
+        app = App.get_running_app()
+        if app.root.ids.text_in1.text: # If the text input is not empty
+            text_to_add = f", {btn.text}"
+        else: # Assume empty text input
+            text_to_add = f"{btn.text}"
+        app.root.ids.text_in1.text += text_to_add
+        self.text = ""
+        # Funcction of each buttons ends here 
+        
+        self.suggestions = []
+        for cscrollview in cscrollviews:
+            parent_layout.remove_widget(cscrollview)
 
 class BeersApp(App): 
     """
