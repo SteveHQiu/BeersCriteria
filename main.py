@@ -3,11 +3,12 @@ import pickle
 import kivy
 from kivy.app import App
 from kivy.uix.label import Label # Imports Label element
+from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout # Imports layout call function which pulls from .kv file with the same name as the class that calls it
-# from kivy.uix.widget import Widget
-# from kivy.uix.textinput import TextInput
+from kivy.uix.widget import Widget
+from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
-# from kivy.uix.accordion import Accordion, AccordionItem
+from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.treeview import TreeView, TreeViewLabel
 
 # from kivy.config import Config
@@ -32,9 +33,17 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
     def checkBeers(self):
         tree_view: TreeView = self.ids.tree_view
         scroll_view: ScrollView = self.ids.scroll_view # Use element with "accordion" id (doesn't need to be bound) to assign ScrollView object
+        
+        creat_str = self.ids.creatinine.text
+        try: 
+            creat_num = float(creat_str)
+        except ValueError: # Set creat_num to 0 when creat_str is empty or invalid
+            creat_num = 0
+        
         text_in: str = self.text_in1.text
-        delimiters = ["\n", ",", ";"]
         drugs = [text_in]
+        
+        delimiters = ["\n", ",", ";"]
         for delim in delimiters:
             drugs = [txt.split(delim) for txt in drugs]
             drugs = sum(drugs, []) # flatten list
@@ -51,7 +60,7 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
         
         # Drug screening
         for drug in drugs_std:
-            drug_warning = checkDrug(drug, std=False)
+            drug_warning = checkDrug(drug, creat_num=creat_num, std=False)
             if drug_warning:
                 l1_node = tree_view.add_node(TreeViewLabel(text=f"Potential issues with {drug}"))
                 tree_view.add_node(TreeViewLabel(text=f"{drug_warning}", markup=True), l1_node)

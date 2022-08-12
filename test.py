@@ -5,87 +5,145 @@ import json, csv
 from pandas import DataFrame
 import timeit
 
+#%%
+try: 
+    print(float(""))
+except ValueError:
+    print("Not a number")
+
+#%% Checking inequalities
+if 0:
+    import re
+    from re import Match
+
+    def checkIneq(rules_str: str, num) -> bool:
+        # Check inequality string against a number
+        rules = [r.strip() for r in rules_str.split(",") if r.strip()] # Obtain non-empty strings
+        checks = []
+        for rule in rules:
+            eq: Match = re.search(R"(?<!<|>)=(\d+\.?\d*)", rules_str) # Capture floats and negative lookbehind so it doesn't match ge or le 
+            gt: Match = re.search(R">(\d+\.?\d*)", rules_str)
+            lt: Match = re.search(R"<(\d+\.?\d*)", rules_str)
+            ge: Match = re.search(R">=(\d+\.?\d*)", rules_str)
+            le: Match = re.search(R"<=(\d+\.?\d*)", rules_str)
+            rg: Match = re.search(R"(\d+\.?\d*)\-(\d+\.?\d*)", rules_str)
+            # Equals
+            # Greater
+            if eq:
+                num_eq = float(eq.group(1))
+                checks.append(num == num_eq)
+            if gt:
+                num_eq = float(gt.group(1))
+                checks.append(num > num_eq)
+            if lt:
+                num_eq = float(lt.group(1))
+                checks.append(num < num_eq)
+            if ge:
+                num_eq = float(ge.group(1))
+                checks.append(num >= num_eq)
+            if le:
+                num_eq = float(le.group(1))
+                checks.append(num <= num_eq)
+            if rg:
+                num_low = float(rg.group(1))
+                num_high = float(rg.group(2))
+                if num_low < num_high:
+                    checks.append(num_low <= num <= num_high)
+                else: # Otherwise assume they are reversed
+                    checks.append(num_low >= num >= num_high)
+        return all(checks) # Only return true if all rules are satisfied
+            
+    # print(checkIneq(">134.4, <150 , 120-1400", 134.5))
+    # print(checkIneq("=134.5", 134.5))
+    # print(checkIneq("=1.1", 1.1))
+    # print(checkIneq("=2", 2))
+    print(checkIneq("<=80", 90))
+    print(checkIneq(">=80", 90))
+    print(checkIneq("<=80", 30))
+    print(checkIneq(">=80", 30))
+
 
 #%% Budget dataframe
-class CDataFrame:
-    def __init__(self, df_dict: dict[str, list] = dict(), csv_path = "") -> None:
-        if csv_path:
-            with open(csv_path, "r", encoding="utf-8-sig") as file: # utf-8-sig to strip off weird characters at beginning of csv
-                csv_reader = csv.reader(file)
-                csv_rows: list[list[str]] = [row for row in csv_reader]
-            cols = csv_rows[0] # First row as columns
-            self.columns = {col: ind for ind, col in enumerate(cols)} # Map cols to index
-            self.rows = [row for row in csv_rows[1:] if any(row)] # Get rest of rows, filter out empty rows
-        elif df_dict: # Unpack into DF
-            self.columns = {col: ind for ind, col in enumerate(df_dict)}
-            max_len = max([len(val) for val in df_dict.values()])
-            recons_df: list[list] = []
-            for i in range(max_len):
-                entry = []
-                for col_key in self.columns:
-                    col_vals = df_dict[col_key]
-                    entry.append(col_vals[i]) # Append col val corresponding to row
-                recons_df.append(entry)
-            self.rows = recons_df
-        else:
-            self.columns = []
-            self.rows = []
-    
-    def __getitem__(self, key: str):
-        ind = self.columns[key] # Convert column label to index
-        return [row[ind] for row in self.rows]
-    
-    def __setitem__(self, key: str, values: list):
-        ind = self.columns[key]
-        if type(values) == list:
-            for i, row in enumerate(self.rows):
-                row[ind] = values[i]
-        else: # Assume values is scalar
-            for i, row in enumerate(self.rows):
-                row[ind] = values
-    
-    def __len__(self):
-        return len(self.rows) # Gets number of entries/rows
-    
-    def read_csv(self, csv_path):
-            with open(csv_path, "r", encoding="utf-8-sig") as file: # utf-8-sig to strip off weird characters at beginning of csv
-                csv_reader = csv.reader(file)
-                csv_rows: list[list[str]] = [row for row in csv_reader]
-            cols = csv_rows[0] # First row as columns
-            self.columns = {col: ind for ind, col in enumerate(cols)} # Map cols to index
-            self.rows = [row for row in csv_rows[1:] if any(row)] # Get rest of rows, filter out empty rows
-    
-    def findRows(self, col, match):
-        ind = self.columns[col]
-        cdf = CDataFrame()
-        cdf.columns = self.columns.copy() # Copy over columns dict
-        for row in self.rows:
-            row_value = row[ind]
-            if row_value == match:
-                cdf.rows.append(row)
-        return cdf # Return new dataframe with matches
+if 0:
+    class CDataFrame:
+        def __init__(self, df_dict: dict[str, list] = dict(), csv_path = "") -> None:
+            if csv_path:
+                with open(csv_path, "r", encoding="utf-8-sig") as file: # utf-8-sig to strip off weird characters at beginning of csv
+                    csv_reader = csv.reader(file)
+                    csv_rows: list[list[str]] = [row for row in csv_reader]
+                cols = csv_rows[0] # First row as columns
+                self.columns = {col: ind for ind, col in enumerate(cols)} # Map cols to index
+                self.rows = [row for row in csv_rows[1:] if any(row)] # Get rest of rows, filter out empty rows
+            elif df_dict: # Unpack into DF
+                self.columns = {col: ind for ind, col in enumerate(df_dict)}
+                max_len = max([len(val) for val in df_dict.values()])
+                recons_df: list[list] = []
+                for i in range(max_len):
+                    entry = []
+                    for col_key in self.columns:
+                        col_vals = df_dict[col_key]
+                        entry.append(col_vals[i]) # Append col val corresponding to row
+                    recons_df.append(entry)
+                self.rows = recons_df
+            else:
+                self.columns = []
+                self.rows = []
         
-    
-    def iterrows(self):
-        for ind, row in enumerate(self.rows):
+        def __getitem__(self, key: str):
+            ind = self.columns[key] # Convert column label to index
+            return [row[ind] for row in self.rows]
+        
+        def __setitem__(self, key: str, values: list):
+            ind = self.columns[key]
+            if type(values) == list:
+                for i, row in enumerate(self.rows):
+                    row[ind] = values[i]
+            else: # Assume values is scalar
+                for i, row in enumerate(self.rows):
+                    row[ind] = values
+        
+        def __len__(self):
+            return len(self.rows) # Gets number of entries/rows
+        
+        def read_csv(self, csv_path):
+                with open(csv_path, "r", encoding="utf-8-sig") as file: # utf-8-sig to strip off weird characters at beginning of csv
+                    csv_reader = csv.reader(file)
+                    csv_rows: list[list[str]] = [row for row in csv_reader]
+                cols = csv_rows[0] # First row as columns
+                self.columns = {col: ind for ind, col in enumerate(cols)} # Map cols to index
+                self.rows = [row for row in csv_rows[1:] if any(row)] # Get rest of rows, filter out empty rows
+        
+        def findRows(self, col, match):
+            ind = self.columns[col]
             cdf = CDataFrame()
             cdf.columns = self.columns.copy() # Copy over columns dict
-            cdf.rows.append(row)
-            yield (ind, cdf) # Yield each row as a df
+            for row in self.rows:
+                row_value = row[ind]
+                if row_value == match:
+                    cdf.rows.append(row)
+            return cdf # Return new dataframe with matches
+            
+        
+        def iterrows(self):
+            for ind, row in enumerate(self.rows):
+                cdf = CDataFrame()
+                cdf.columns = self.columns.copy() # Copy over columns dict
+                cdf.rows.append(row)
+                yield (ind, cdf) # Yield each row as a df
 
-# a = CDataFrame(csv_path="data/test.csv")
-a = CDataFrame({"Drug": ["drug1", "drug2", "drug3", "drug4"],
-                "Properties": ["prop1", "prop2", "prop3", "prop3"],
-                "Other": ["other2", "other2", "other3", "other4"]})
-DF_I = CDataFrame(csv_path=R"data\interac_std.csv")
-DF_S = CDataFrame(csv_path=R"data\screen_std.csv")
-import pickle
-with open("screen_std.dat", "w+b") as file:
-    pickle.dump(DF_S, file)
+    # a = CDataFrame(csv_path="data/test.csv")
+    a = CDataFrame({"Drug": ["drug1", "drug2", "drug3", "drug4"],
+                    "Properties": ["prop1", "prop2", "prop3", "prop3"],
+                    "Other": ["other2", "other2", "other3", "other4"]})
+    DF_I = CDataFrame(csv_path=R"data\interac_std.csv")
+    DF_S = CDataFrame(csv_path=R"data\screen_std.csv")
+    import pickle
+    with open("screen_std.dat", "w+b") as file:
+        pickle.dump(DF_S, file)
 
-with open("screen_std.dat", "rb") as file: 
-    df = pickle.load(file)
-print(df.columns)
+    with open("screen_std.dat", "rb") as file: 
+        df = pickle.load(file)
+    print(df.columns)
 
 #%% Budget networkx
 if 0:

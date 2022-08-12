@@ -11,6 +11,7 @@
             size_hint_y: 0.2 # Only take half of the allocated space in x-direction for inputs
             TextInput:
                 id: text_in1 # ID assigns the identifier of this object in the root object in python (i.e., RootLayout)
+                hint_text: "Drug names separated by commas (,), semicolons (;), or new lines. Names standardized before checking against Beers rules"
                 height: 10
             Button:
                 text: "Check\ndrugs"
@@ -37,6 +38,14 @@
             #     height: 10
             #     size_hint_x: 0.1
             #     on_press: root.testFx4()
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: 0.1 # Only take half of the allocated space in x-direction for inputs
+            TextInput:
+                id: creatinine # ID assigns the identifier of this object in the root object in python (i.e., RootLayout)
+                hint_text: "Creatinine clearance (mL/min, optional)"
+                height: 10
+                size_hint_x: 0.2
         ScrollView:
             id: scroll_view
             do_scroll_x: False

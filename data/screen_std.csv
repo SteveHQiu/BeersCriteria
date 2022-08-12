@@ -277,7 +277,7 @@ Venous thromboembolism treatment and for VTE prophylaxis with hip or knee replac
 240,Triamterene,Avoid,Increased potassium and decreased sodium,,TRIAMTERENE,<30,
 241,Duloxetine,Avoid,"Increased gastrointestinal adverse effects (nausea, diarrhea)",,DULOXETINE,<30,
 242,Gabapentin,Reduce dose,CNS adverse effects,,GABAPENTIN,<60,
-243,Levetiracetam,Reduce dose,CNS adverse effects,,LEVETIRACETAM,≤80,
+243,Levetiracetam,Reduce dose,CNS adverse effects,,LEVETIRACETAM,<=80,
 244,Pregabalin,Reduce dose,CNS adverse effects,,PREGABALIN,<60,
 245,Tramadol,"Immediate release: reduce dose
 Extended release: avoid",CNS adverse effects,,TRAMADOL,<30,
