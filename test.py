@@ -4,17 +4,29 @@ import pandas as pd
 import json, csv
 from pandas import DataFrame
 import timeit
+
 #%%
-counterion = "ACETATE"
-keys = ["ACETOACETATE", "SOMETHING ACETATE", "ACETATE SOMETHING", "ACETATES"]
-for key in keys:
-    matches = re.findall(RF"(?:\W|^){counterion}(?:\W|$)", key) # Find counterion at beginning or end, need normal brackets since braces will result in literal interpretation
-    if matches:
-        print(matches)
-        print(key)
-a = ["a"]
-a += []
-print(a)
+print(bool([[]]))
+#%%
+if 0:
+    counterion = "ACETATE"
+    drug_dict = {"ACETOACETATE": 1, "SOMETHING1 ACETATE": 2, "ACETATE SOMETHING2": 3, "ACETATES": 4, "SOMETHING1": 99} # For testing
+
+    def _addDictEntry(d: dict, entry: dict):
+            entry = {k: entry[k] for k in entry if k not in d} # Get non-overlapping entries
+            d.update(entry)
+            
+    for key in drug_dict.copy():
+        val = drug_dict[key]
+        matches = re.findall(RF"(?:\W|^){counterion}(?:\W|$)", key) # Find counterion at beginning or end, need normal brackets since braces will result in literal interpretation
+        if matches:
+            del drug_dict[key]
+            for match in matches:
+                print(match + " | " + key)
+                key = key.replace(match, "")
+            _addDictEntry(drug_dict, {key: val}) # Only adds to dict if no conflict, modifies in-inplace
+
+    print(drug_dict)
 
 #%% Adding to dicts
 if 0:
