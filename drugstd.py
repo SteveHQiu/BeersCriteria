@@ -28,11 +28,9 @@ def standardize(druglist, thresh=0.85):
         to the generic names. It is used to provide naming
         consistency to the FAERS reports.
     """
-    splitter = re.compile("\\W+|\d+")
     standardized_druglist = []
     for drug in druglist:
         drug = drug.upper()
-        drug = " ".join(splitter.split(drug)).strip()
         gen = DRUGDICT.get(drug)
         if gen:
             standardized_druglist.append(gen)

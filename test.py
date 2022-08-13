@@ -1,21 +1,33 @@
-import enum
+import enum, re
 from typing import Hashable
 import pandas as pd
 import json, csv
 from pandas import DataFrame
 import timeit
-
 #%%
-def addDictEntry(d: dict, entry: dict):
-    entry = {k: entry[k] for k in entry if k not in d} # Get non-overlapping entries
-    d.update(entry)
+counterion = "ACETATE"
+keys = ["ACETOACETATE", "SOMETHING ACETATE", "ACETATE SOMETHING", "ACETATES"]
+for key in keys:
+    matches = re.findall(RF"(?:\W|^){counterion}(?:\W|$)", key) # Find counterion at beginning or end, need normal brackets since braces will result in literal interpretation
+    if matches:
+        print(matches)
+        print(key)
+a = ["a"]
+a += []
+print(a)
 
-a = {"a": 1, "b":2, "c":3}
-b = {"a": 69, "e": 10}
-addDictEntry(a, b)
-print(a)
-del a["a"]
-print(a)
+#%% Adding to dicts
+if 0:
+    def addDictEntry(d: dict, entry: dict):
+        entry = {k: entry[k] for k in entry if k not in d} # Get non-overlapping entries
+        d.update(entry)
+
+    a = {"a": 1, "b":2, "c":3}
+    b = {"a": 69, "e": 10}
+    addDictEntry(a, b)
+    print(a)
+    del a["a"]
+    print(a)
 
 #%% Checking inequalities
 if 0:
