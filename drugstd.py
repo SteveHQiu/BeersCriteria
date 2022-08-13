@@ -1,5 +1,6 @@
 import json, re, operator
 from difflib import SequenceMatcher
+from typing import Union
 # import Levenshtein
 
     
@@ -7,7 +8,7 @@ with open("data/drugdict.json", "r") as file:
     DRUGDICT: dict = json.load(file)
 
   
-def find_closest_string(query, dictionary, thresh=0.85):
+def find_closest_string(query: str, dictionary: dict[str, str], thresh=0.85):
     """ This function returns the closest match for 
          a query string against a dictionary of terms
         using levenstein distance
@@ -29,7 +30,7 @@ def standardize(druglist: list[str], thresh=0.85):
         consistency to the FAERS reports.
         EDIT - Using built-in sequencematcher instead of levenshtein 
     """
-    standardized_druglist = []
+    standardized_druglist: list[Union[str, None]] = []
     druglist = [d.upper() for d in druglist if type(d) == str] # Capitalize, filter for strings
             
     for drug in druglist:        
@@ -81,5 +82,6 @@ if __name__ == "__main__":
     # print(standardize(["estrogen/testosterone"])) # 'ESTROGENS/TESTOSTERONE'
     # print(standardize(["t3stosterone/estrogen"])) # 'ESTROGENS/TESTOSTERONE'
     print(standardize(["Dipyridamole, oral short acting"])) #
+    print(standardize(["phenytoin"])) #
     
     print("--- %s seconds ---" % (time.time() - start_time))

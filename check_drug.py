@@ -4,14 +4,14 @@ from re import Match
 import drugstd
 from custom_libs import CGraph, hopcroft_karp_matching, CDataFrame
 
-# # Serialize files (Uncomment to export new .dat files On PC)
-# with open("data/screen_std.dat", "w+b") as file:
-#     DF_S = CDataFrame(csv_path="data/screen_std.csv")
-#     pickle.dump(DF_S, file)
+# Serialize files (Uncomment to export new .dat files On PC)
+with open("data/screen_std.dat", "w+b") as file:
+    DF_S = CDataFrame(csv_path="data/screen_std.csv")
+    pickle.dump(DF_S, file)
 
-# with open("data/interac_std.dat", "w+b") as file:
-#     DF_I = CDataFrame(csv_path="data/interac_std.csv")
-#     pickle.dump(DF_I, file)
+with open("data/interac_std.dat", "w+b") as file:
+    DF_I = CDataFrame(csv_path="data/interac_std.csv")
+    pickle.dump(DF_I, file)
     
 # Load (Uncomment for loading of generated .dat files on mobile)
 with open("data/screen_std.dat", "rb") as file:
@@ -135,10 +135,11 @@ if __name__ == "__main__":
     # print(checkInterac(["Trandolapril", "Losartan"])) # Yes
     # print(checkInterac(["Losartan", "Losartan"])) # No
     # print(checkInterac(["Triamterene", "Losartan"])) # Yes
+    # print(checkInterac(["TRIMETHOPRIM/SULFAMETHOXAZOLE", "Phenytoin", "Quazepam"])) # Yes
     # print(checkInterac(["Losartan", "Quazepam", "Quazepam"])) # No
     # print(checkInterac(["Losartan", "Quazepam", "Quazepam", "Trospium", "Trospium"])) # No
     # print(checkInterac(["Losartan", "Quazepam", "Quazepam", "Trospium", "Prochlorperazine"])) # Yes
     # print(checkInterac(["Losartan", "Gabapentin", "Gabapentin", "Pregabalin"])) # No
     # print(checkInterac(["Losartan", "Gabapentin", "Gabapentin", "Pregabalin", "Lacosamide"])) # Yes
-    print(checkDrug("Levetiractam", creat_num=90))
+    # print(checkDrug("Levetiractam", creat_num=90))
     print(checkDrug("ENOXAPARIN", creat_num=6))

@@ -105,6 +105,13 @@ class AutoCompleter(TextInput):
     container = Factory.ObjectProperty()
 
     def on_text(self, _, text: str):
+        if not text: # If text empty, update suggestions and remove box
+            parent_layout: BoxLayout = self.parent
+            cscrollviews = [l for l in parent_layout.children if type(l) == CScrollView]
+            self.suggestions = []
+            for cscrollview in cscrollviews:
+                parent_layout.remove_widget(cscrollview)
+            return
         text = text.upper()
         matches = []
         for word in DICT:

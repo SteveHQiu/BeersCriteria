@@ -141,7 +141,7 @@ def process4(json_path = "data/drugdict.json", save = False, add = False):
         with open(json_path, "w+") as file:
             json.dump(drug_dict, file)
 
-process4(save=True, add=True)
+# process4(save=True, add=True)
 
 def process3(csv_path = R"data\screen4.csv",
              col = "Medications",
@@ -174,16 +174,21 @@ def process2(csv_path = R"data\interac.csv",
     # Convert string of drugs contained in specified cols separated by specified delimiter 
     df = pd.read_csv(csv_path)
     root_name = os.path.splitext(csv_path)[0]
+    unstd_drugs = []
     for index, row in df.iterrows():
         for col in cols:
             if type(row[col]) == str:
                 items_str: str = row[col]
                 items: list[str] = [item.strip() for item in items_str.split(delim)]
-                items = [drugs.standardize([drug])[0] for drug in items]
-                items_json = json.dumps(items)
+                items_std = [drugs.standardize([drug])[0] for drug in items]
+                if None in items_std:
+                    unstd_drugs += [items[ind] for ind, item in enumerate(items_std) if not item] # Append origin of empty translations by looking in original container with same index
+                items_json = json.dumps(items_std)
                 row[col] = items_json
+    print(unstd_drugs)
     df.to_csv(f"{root_name}_std.csv")
 
+process2()
 
 def process1(csv_path = R"data\screen.csv", col = "Drug", fda = False):
     # Generate synonyms using drugstandards and FDA (optional)
