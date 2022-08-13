@@ -6,6 +6,58 @@ from math import nan
 import drugstd as drugs # Import local version
 
 
+def addDictEntry(d: dict, entry: dict):
+    entry = {k: entry[k] for k in entry if k not in d} # Get non-overlapping entries
+    d.update(entry)
+json_path = "data/drugdict.json"
+with open(json_path, "r") as file:
+    drug_dict = json.load(file)
+cont1 = []
+cont2 = []
+cont3 = []
+cont4 = []
+cont5 = []
+for key in drug_dict.copy():
+    key: str
+    spaces = re.findall(R" ", key)
+    dashes = re.findall(R"\-", key) # 
+    brkets = re.findall(R" \([^\[\]\(\)]*\)", key)
+    sqr_brkets = re.findall(R" \[[^\[\]\(\)]*\]", key) # Match parenthes preceded by a space and without any brackets within it
+    if len(dashes) < 3 and (len(brkets) == 1 or len(sqr_brkets) == 1) and \
+        (bool(len(brkets)) != bool(len(sqr_brkets))): 
+        # Screen out orgchem compounds (usually has 3+ dashes and 2+ brackets)
+        # Last and statement is an XOR comparison since both should be positive to get to this point
+        val = drug_dict[key]
+        del drug_dict[key] # Delete entry
+        for match in brkets + sqr_brkets:
+            key = key.replace(match, "") # Replace original variable 
+        addDictEntry(drug_dict, {key: val}) # Only adds to dict if no conflict, modifies in-inplace
+        cont1.append(key)
+    
+    
+        
+    if len(key) <= 2: # Remove entries less than 2 
+        del drug_dict[key]
+        cont3.append(key)
+        
+    matches2 = re.findall(R"SODIUM", key)
+    matches5 = re.findall(R" ACETATE", key)
+    if len(matches2):
+        cont2.append(key)
+    if len(matches5):
+        cont5.append(key)
+        
+# print(set(cont5).symmetric_difference(cont3))
+print(cont2)
+print(len(cont2))
+print(cont3)
+print(len(cont3))
+print(drug_dict)
+
+
+if 0:
+    with open(json_path, "w+") as file:
+        pass
 
 def process3(csv_path = R"data\screen4.csv",
              col = "Medications",
@@ -76,7 +128,6 @@ def process2(csv_path = R"data\screen2.csv", col = "Drug", fda = False):
     merged = pd.concat([df, std_output], axis=1)
     merged.to_csv(f"{root_name}_std.csv", index=False)
 
-process2(r"data\screen3.csv")
             
 
 if 0: # Processing raw products to get only unique drugname and active ingredients 

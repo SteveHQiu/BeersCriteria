@@ -6,7 +6,16 @@ from pandas import DataFrame
 import timeit
 
 #%%
-print(list({"a":1, "b":2}))
+def addDictEntry(d: dict, entry: dict):
+    entry = {k: entry[k] for k in entry if k not in d} # Get non-overlapping entries
+    d.update(entry)
+
+a = {"a": 1, "b":2, "c":3}
+b = {"a": 69, "e": 10}
+addDictEntry(a, b)
+print(a)
+del a["a"]
+print(a)
 
 #%% Checking inequalities
 if 0:
