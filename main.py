@@ -17,13 +17,6 @@ from kivy.uix.popup import Popup
 from kivy.factory import Factory
 from kivy.clock import Clock
 
-# from kivy.config import Config
-# Config.set('graphics', 'width', '70')
-# Config.set('graphics', 'height', '150')
-
-# from kivy.core.window import Window
-# Window.size = (300, 500)
-
 # Test
 # Internals 
 import drugstd
@@ -135,16 +128,25 @@ class BeersApp(App):
     """
     
     def checkBeers(self):
+        self._showLoading()
+        
         tree_view: TreeView = self.root.ids.tree_view
         for node in [i for i in tree_view.iterate_all_nodes()]:
-            tree_view.remove_node(node) # Clear nodes
-        self._showLoading()
+            tree_view.remove_node(node) # Clear nodes        
+        creat_str = self.root.ids.creatinine.text
+        try: 
+            creat_num = float(creat_str)
+        except ValueError: # Set creat_num to 0 when creat_str is empty or invalid
+            creat_num = 0
+        
+        text_in: str = self.root.text_in1.text
         
         
         finished_check = Event()
         nodes_queue = Queue() # Queue for nodes to be added 
         
-        thread_checking = Thread(target=self._checkDrugs, args=[nodes_queue, finished_check]) 
+        thread_checking = Thread(target=self._checkDrugs,
+                                 args=[nodes_queue, finished_check, creat_num, text_in]) 
         # Separate thread can't change kivy graphics, need to pass info into main thread
         # Passing Queue container to share nodes to be generated since they can only be rendered in main thread
         thread_checking.daemon = True
@@ -164,15 +166,9 @@ class BeersApp(App):
         self.pop_up.open()
         print("=========Show loading")
     
-    def _checkDrugs(self, nodes_queue: Queue, finished_check: Event):
-        tree_view: TreeView = self.root.ids.tree_view
-        creat_str = self.root.ids.creatinine.text
-        try: 
-            creat_num = float(creat_str)
-        except ValueError: # Set creat_num to 0 when creat_str is empty or invalid
-            creat_num = 0
+    def _checkDrugs(self, nodes_queue: Queue, finished_check: Event,
+                    creat_num: float, text_in: str):
         
-        text_in: str = self.root.text_in1.text
         drugs = [text_in]
         
         delimiters = ["\n", ",", ";"]
