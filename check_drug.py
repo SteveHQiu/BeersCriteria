@@ -5,13 +5,13 @@ import drugstd
 from custom_libs import CGraph, hopcroft_karp_matching, CDataFrame
 
 # Serialize files (Uncomment to export new .dat files On PC)
-with open("data/screen_std.dat", "w+b") as file:
-    DF_S = CDataFrame(csv_path="data/screen_std.csv")
-    pickle.dump(DF_S, file)
+# with open("data/screen_std.dat", "w+b") as file:
+#     DF_S = CDataFrame(csv_path="data/screen_std.csv")
+#     pickle.dump(DF_S, file)
 
-with open("data/interac_std.dat", "w+b") as file:
-    DF_I = CDataFrame(csv_path="data/interac_std.csv")
-    pickle.dump(DF_I, file)
+# with open("data/interac_std.dat", "w+b") as file:
+#     DF_I = CDataFrame(csv_path="data/interac_std.csv")
+#     pickle.dump(DF_I, file)
     
 # Load (Uncomment for loading of generated .dat files on mobile)
 with open("data/screen_std.dat", "rb") as file:

@@ -1,5 +1,7 @@
-import pickle, json
+import pickle, json, time
 from difflib import SequenceMatcher
+from threading import Thread, main_thread, Event
+from queue import Queue
 
 import kivy
 from kivy.app import App
@@ -11,7 +13,9 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.treeview import TreeView, TreeViewLabel
+from kivy.uix.popup import Popup
 from kivy.factory import Factory
+from kivy.clock import Clock
 
 # from kivy.config import Config
 # Config.set('graphics', 'width', '70')
@@ -32,46 +36,6 @@ with open("data/drugdict.json", "r") as file:
 class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayout class 
     def __init__(self, **kwargs):
         super(RootLayout, self).__init__(**kwargs) # Calls the superconstructor 
-        self.cur_text = ""
-    
-    def checkBeers(self):
-        tree_view: TreeView = self.ids.tree_view
-        scroll_view: ScrollView = self.ids.scroll_view # Use element with "accordion" id (doesn't need to be bound) to assign ScrollView object
-        
-        creat_str = self.ids.creatinine.text
-        try: 
-            creat_num = float(creat_str)
-        except ValueError: # Set creat_num to 0 when creat_str is empty or invalid
-            creat_num = 0
-        
-        text_in: str = self.text_in1.text
-        drugs = [text_in]
-        
-        delimiters = ["\n", ",", ";"]
-        for delim in delimiters:
-            drugs = [txt.split(delim) for txt in drugs]
-            drugs = sum(drugs, []) # flatten list
-        print("Input texts: ", drugs)
-        drugs_std = [drugstd.standardize([d])[0] for d in drugs]
-        drugs_std = [d for d in drugs_std if d] # Filter empty data types
-        drugs_std = list(set(drugs_std)) # Screen out duplicates
-        print("Standardized: ", drugs_std)
-        
-        for node in [i for i in tree_view.iterate_all_nodes()]:
-            tree_view.remove_node(node) # Clear nodes
-        l1_node = tree_view.add_node(TreeViewLabel(text=f"{len(drugs_std)} standardized drugs found"))
-        tree_view.add_node(TreeViewLabel(text=f"{drugs_std}"), l1_node)
-        
-        # Drug screening
-        for drug in drugs_std:
-            drug_warning = checkDrug(drug, creat_num=creat_num, std=False)
-            if drug_warning:
-                l1_node = tree_view.add_node(TreeViewLabel(text=f"Potential issues with {drug}"))
-                tree_view.add_node(TreeViewLabel(text=f"{drug_warning}", markup=True), l1_node)
-        # Interaction reporting
-        for offending_drugs, report in checkInterac(drugs_std, std=False):
-            l1_node = tree_view.add_node(TreeViewLabel(text=f"Interaction between {offending_drugs}"))
-            tree_view.add_node(TreeViewLabel(text=f"{report}", markup=True), l1_node)
         
     def testFx1(self):
         a = CDataFrame()
@@ -86,7 +50,8 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
             a = pickle.load(file)
         print(a.columns)
         
-
+class PopupBox(Popup):
+    pass
 
 class CButton(Button):
     pass
@@ -169,9 +134,88 @@ class BeersApp(App):
     .kv file name can exclude "App" portion of App class identifier
     """
     
-    def build(self): # Returns the UI
-        root = RootLayout()
-        return root # Return whatever root element you are using for the UI
+    def checkBeers(self):
+        tree_view: TreeView = self.root.ids.tree_view
+        for node in [i for i in tree_view.iterate_all_nodes()]:
+            tree_view.remove_node(node) # Clear nodes
+        self._showLoading()
+        
+        
+        finished_check = Event()
+        nodes_queue = Queue() # Queue for nodes to be added 
+        
+        thread_checking = Thread(target=self._checkDrugs, args=[nodes_queue, finished_check]) 
+        # Separate thread can't change kivy graphics, need to pass info into main thread
+        # Passing Queue container to share nodes to be generated since they can only be rendered in main thread
+        thread_checking.daemon = True
+        thread_checking.start()
+
+        while True:
+            while not nodes_queue.empty():
+                nodes: tuple[str, str] = nodes_queue.get()
+                self._addNestedNode(nodes[0], nodes[1]) # Add these nodes using the main thread
+            if finished_check.is_set(): # Waiting on separate thread to finish 
+                break
+                
+
+    def _showLoading(self):
+        self.pop_up = PopupBox(title='Test popup', content=Label(text='Hello world'), size_hint=(0.4, 0.2),
+              auto_dismiss=False)
+        self.pop_up.open()
+        print("=========Show loading")
+    
+    def _checkDrugs(self, nodes_queue: Queue, finished_check: Event):
+        tree_view: TreeView = self.root.ids.tree_view
+        creat_str = self.root.ids.creatinine.text
+        try: 
+            creat_num = float(creat_str)
+        except ValueError: # Set creat_num to 0 when creat_str is empty or invalid
+            creat_num = 0
+        
+        text_in: str = self.root.text_in1.text
+        drugs = [text_in]
+        
+        delimiters = ["\n", ",", ";"]
+        for delim in delimiters:
+            drugs = [txt.split(delim) for txt in drugs]
+            drugs = sum(drugs, []) # flatten list
+        print("Input texts: ", drugs)
+        drugs_std = [drugstd.standardize([d])[0] for d in drugs]
+        drugs_std = [d for d in drugs_std if d] # Filter empty data types
+        drugs_std = list(set(drugs_std)) # Screen out duplicates
+        print("Standardized: ", drugs_std)
+        
+        
+        l1_info = f"{len(drugs_std)} standardized drugs found"
+        l2_info = f"{drugs_std}"
+        nodes_queue.put((l1_info, l2_info))
+        
+        # Drug screening
+        for drug in drugs_std:
+            drug_warning = checkDrug(drug, creat_num=creat_num, std=False)
+            if drug_warning:
+                l1_info = f"Potential issues with {drug}"
+                l2_info = f"{drug_warning}"
+                nodes_queue.put((l1_info, l2_info))
+                
+        # Interaction reporting
+        for offending_drugs, report in checkInterac(drugs_std, std=False):
+            l1_info = f"Interaction between {offending_drugs}"
+            l2_info = f"{report}"
+            nodes_queue.put((l1_info, l2_info))
+        finished_check.set()
+        self.pop_up.dismiss()
+        
+    
+    def _addNestedNode(self, l1_info, l2_info = None): # Passing processed information into main thread
+        tree_view: TreeView = self.root.ids.tree_view
+        l1_node = tree_view.add_node(TreeViewLabel(text=l1_info))
+        if l2_info: # If there's info for subnode
+            tree_view.add_node(TreeViewLabel(text=l2_info, markup=True), l1_node)
+    
+    # def build(self): # Returns the UI
+    #     root = RootLayout()
+    #     return root # Return whatever root element you are using for the UI
         
 
 
