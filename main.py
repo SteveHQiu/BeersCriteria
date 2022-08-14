@@ -1,4 +1,4 @@
-import pickle, json, time
+import pickle, json, time, re
 from difflib import SequenceMatcher
 from threading import Thread, main_thread, Event
 from queue import Queue
@@ -126,9 +126,14 @@ class BeersApp(App):
     .kv file name is not case-sensitive to the class name but should be all lowercase to avoid issues
     .kv file name can exclude "App" portion of App class identifier
     """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.finished_check = Event() # Cross-thread event to indicate whether or not drug checking has finished
+        self.reports_queue = Queue() # Queue for nodes to be added 
+    
     
     def checkBeers(self):
-        self._showLoading()
+        # Note that graphics will not update until this function reaches return statement/end of fx definition        
         
         tree_view: TreeView = self.root.ids.tree_view
         for node in [i for i in tree_view.iterate_all_nodes()]:
@@ -141,40 +146,50 @@ class BeersApp(App):
         
         text_in: str = self.root.text_in1.text
         
+        # Reset event and queues
+        self.finished_check = Event() # Cross-thread event to indicate whether or not drug checking has finished
+        self.reports_queue = Queue() # Queue for nodes to be added 
         
-        finished_check = Event()
-        nodes_queue = Queue() # Queue for nodes to be added 
-        
-        thread_checking = Thread(target=self._checkDrugs,
-                                 args=[nodes_queue, finished_check, creat_num, text_in]) 
+        thread_checking = Thread(target=self._checkDrugs, args=[creat_num, text_in]) 
         # Separate thread can't change kivy graphics, need to pass info into main thread
         # Passing Queue container to share nodes to be generated since they can only be rendered in main thread
         thread_checking.daemon = True
         thread_checking.start()
+        self._renderQueueNodes() # Passes listening of queue to a different delayed action so that this main function can be returned and graphics can be updated
 
-        while True:
-            while not nodes_queue.empty():
-                nodes: tuple[str, str] = nodes_queue.get()
-                self._addNestedNode(nodes[0], nodes[1]) # Add these nodes using the main thread
-            if finished_check.is_set(): # Waiting on separate thread to finish 
-                break
-                
 
+    def _renderQueueNodes(self, *args): # Extra args can be passed down to the changGraphics fx 
+        self._showLoading() # Open "loading" popup
+        Clock.schedule_once(lambda dt: self._changeGraphics(dt, *args), 0) # Schedule action for when graphics can update, dt is automatically passed in as the time b/n scheduling and calling of function
+        # Passing _changeGraphics off to scheduled action allows kivy to consider the main function to be finished hence graphics can be updated
+        
     def _showLoading(self):
-        self.pop_up = PopupBox(title='Test popup', content=Label(text='Hello world'), size_hint=(0.4, 0.2),
+        self.pop_up = PopupBox(title='Please wait...', content=Label(text='Checking drugs against database'), size_hint=(0.4, 0.2),
               auto_dismiss=False)
         self.pop_up.open()
-        print("=========Show loading")
+        print("========= Show loading ===========")
     
-    def _checkDrugs(self, nodes_queue: Queue, finished_check: Event,
-                    creat_num: float, text_in: str):
+    def _changeGraphics(self, dt, *args): # dt = time between scheduling and calling of function
         
-        drugs = [text_in]
+        while True:
+            while not self.reports_queue.empty():
+                nodes: tuple[str, str] = self.reports_queue.get()
+                self._addNestedNode(nodes[0], nodes[1]) # Add these nodes using the main thread
+            if self.finished_check.is_set(): # Waiting on separate thread to finish 
+                break
         
-        delimiters = ["\n", ",", ";"]
-        for delim in delimiters:
-            drugs = [txt.split(delim) for txt in drugs]
-            drugs = sum(drugs, []) # flatten list
+    def _addNestedNode(self, l1_info, l2_info = None): # Passing processed information into main thread
+        tree_view: TreeView = self.root.ids.tree_view
+        l1_node = tree_view.add_node(TreeViewLabel(text=l1_info))
+        if l2_info: # If there's info for subnode
+            tree_view.add_node(TreeViewLabel(text=l2_info, markup=True), l1_node)
+        
+    
+    def _checkDrugs(self, creat_num: float, text_in: str):
+        # Connected to self.finished_check and self.reports_queue for multi-threading
+        
+        drugs = re.split("\n|,|;", text_in) # Split by delimiters
+        drugs = [d.strip() for d in drugs if d.strip()]
         print("Input texts: ", drugs)
         drugs_std = [drugstd.standardize([d])[0] for d in drugs]
         drugs_std = [d for d in drugs_std if d] # Filter empty data types
@@ -184,7 +199,7 @@ class BeersApp(App):
         
         l1_info = f"{len(drugs_std)} standardized drugs found"
         l2_info = f"{drugs_std}"
-        nodes_queue.put((l1_info, l2_info))
+        self.reports_queue.put((l1_info, l2_info))
         
         # Drug screening
         for drug in drugs_std:
@@ -192,22 +207,18 @@ class BeersApp(App):
             if drug_warning:
                 l1_info = f"Potential issues with {drug}"
                 l2_info = f"{drug_warning}"
-                nodes_queue.put((l1_info, l2_info))
-                
+                self.reports_queue.put((l1_info, l2_info))
         # Interaction reporting
         for offending_drugs, report in checkInterac(drugs_std, std=False):
             l1_info = f"Interaction between {offending_drugs}"
             l2_info = f"{report}"
-            nodes_queue.put((l1_info, l2_info))
-        finished_check.set()
+            self.reports_queue.put((l1_info, l2_info))
+        
+        # Refer back to self events and popups to dismiss them
+        self.finished_check.set()
         self.pop_up.dismiss()
         
     
-    def _addNestedNode(self, l1_info, l2_info = None): # Passing processed information into main thread
-        tree_view: TreeView = self.root.ids.tree_view
-        l1_node = tree_view.add_node(TreeViewLabel(text=l1_info))
-        if l2_info: # If there's info for subnode
-            tree_view.add_node(TreeViewLabel(text=l2_info, markup=True), l1_node)
     
     # def build(self): # Returns the UI
     #     root = RootLayout()
