@@ -1,6 +1,6 @@
 #:kivy 2.1.0
 
-<RootLayout>:
+RootLayout:
     # Need to add links from object ids to properties (which can be access via self. in python code)
     text_in1: text_in1 # Assigns the call of display_label to an identifier within kv file
     id: rootlayout
@@ -19,7 +19,7 @@
                 text: "Check\ndrugs"
                 # height: 10
                 size_hint_x: 0.2
-                on_press: root.checkBeers()
+                on_press: app.checkBeers()
             # Button:
             #     text: "Test1"
             #     height: 10
@@ -47,6 +47,7 @@
             hint_text: "Creatinine clearance (mL/min, optional)"
             multiline: False
         AutoCompleter: # Inherits from TextInput
+            id: autocompleter
             size_hint_y: None # Set size_hint to none to manual set height
             hint_text: "Standardized drug name lookup:"
             multiline: False
@@ -57,6 +58,7 @@
             do_scroll_y: True
             TreeView:
                 id: tree_view
+                root_options: dict(text='Checking drug entries against database...')
                 hide_root: True
                 size_hint_y: None # Need to set this to none in order to use scrollview in the respective direction (x and y)
                 height: self.minimum_height # Bind height (used for scroll) to minimum_height which changes when children are expanded
