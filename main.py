@@ -43,7 +43,7 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
             a = pickle.load(file)
         print(a.columns)
         
-class PopupBox(Popup):
+class CPopup(Popup):
     pass
 
 class CButton(Button):
@@ -118,6 +118,12 @@ class AutoCompleter(TextInput):
         self.suggestions = []
         for cscrollview in cscrollviews:
             parent_layout.remove_widget(cscrollview)
+            
+class CTreeView(TreeView):
+    def select_node(self, node):
+        self.toggle_node(node) 
+        # return super().select_node(node)
+    pass
 
 class BeersApp(App): 
     """
@@ -150,7 +156,7 @@ class BeersApp(App):
         self.finished_check = Event() # Cross-thread event to indicate whether or not drug checking has finished
         self.reports_queue = Queue() # Queue for nodes to be added 
         
-        thread_checking = Thread(target=self._checkDrugs, args=[creat_num, text_in]) 
+        thread_checking = Thread(target=self.parseDrugs, args=[creat_num, text_in]) 
         # Separate thread can't change kivy graphics, need to pass info into main thread
         # Passing Queue container to share nodes to be generated since they can only be rendered in main thread
         thread_checking.daemon = True
@@ -164,8 +170,7 @@ class BeersApp(App):
         # Passing _changeGraphics off to scheduled action allows kivy to consider the main function to be finished hence graphics can be updated
         
     def _showLoading(self):
-        self.pop_up = PopupBox(title='Please wait...', content=Label(text='Checking drugs against database'), size_hint=(0.4, 0.2),
-              auto_dismiss=False)
+        self.pop_up = CPopup()
         self.pop_up.open()
         print("========= Show loading ===========")
     
@@ -176,7 +181,9 @@ class BeersApp(App):
                 nodes: tuple[str, str] = self.reports_queue.get()
                 self._addNestedNode(nodes[0], nodes[1]) # Add these nodes using the main thread
             if self.finished_check.is_set(): # Waiting on separate thread to finish 
+                self.pop_up.dismiss() # Backup pop-up dismisser in case separate thread does not handle it 
                 break
+            time.sleep(0.01) # In case other threads need to run extensive loops 
         
     def _addNestedNode(self, l1_info, l2_info = None): # Passing processed information into main thread
         tree_view: TreeView = self.root.ids.tree_view
@@ -185,7 +192,7 @@ class BeersApp(App):
             tree_view.add_node(TreeViewLabel(text=l2_info, markup=True), l1_node)
         
     
-    def _checkDrugs(self, creat_num: float, text_in: str):
+    def parseDrugs(self, creat_num: float, text_in: str):
         # Connected to self.finished_check and self.reports_queue for multi-threading
         
         drugs = re.split("\n|,|;", text_in) # Split by delimiters

@@ -1,5 +1,28 @@
 #:kivy 2.1.0
 
+<CPopup>:
+    title: "Please wait..."
+    size_hint: 0.7, 0.25
+    auto_dismiss: False
+    Label:
+        text: 'Checking drugs against database'
+        text_size: self.width, None
+        padding: dp(10), dp(10)
+
+<CButton>:
+    size: self.texture_size
+    padding: dp(10), dp(10)
+    
+<CScrollView>:
+    id: cscrollview
+    size_hint_y: None # Set size_hint to none to manual set height
+    height: sp(30)
+    BoxLayout:
+        id: button_box
+        orientation: 'horizontal'
+        size_hint_x: None
+        width: self.minimum_width
+
 RootLayout:
     # Need to add links from object ids to properties (which can be access via self. in python code)
     text_in1: text_in1 # Assigns the call of display_label to an identifier within kv file
@@ -56,7 +79,7 @@ RootLayout:
             id: scroll_view
             do_scroll_x: False
             do_scroll_y: True
-            TreeView:
+            CTreeView:
                 id: tree_view
                 root_options: dict(text='Checking drug entries against database...')
                 hide_root: True
@@ -68,15 +91,3 @@ RootLayout:
             #     size_hint_y: None # Need to set this to none in order to use scrollview in the respective direction (x and y)
             #     height: 50*8 # 50px for every element 
 
-<CButton>:
-    size: self.texture_size
-    padding: dp(10), dp(10)
-<CScrollView>:
-    id: cscrollview
-    size_hint_y: None # Set size_hint to none to manual set height
-    height: sp(30)
-    BoxLayout:
-        id: button_box
-        orientation: 'horizontal'
-        size_hint_x: None
-        width: self.minimum_width
