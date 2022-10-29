@@ -1,4 +1,5 @@
 #:kivy 2.1.0
+#:import webbrowser webbrowser
 
 <CPopup>:
     title: "Please wait..."
@@ -23,58 +24,88 @@
         size_hint_x: None
         width: self.minimum_width
 
-RootLayout:
-    # Need to add links from object ids to properties (which can be access via self. in python code)
-    text_in1: text_in1 # Assigns the call of display_label to an identifier within kv file
-    id: rootlayout
-    # Can also directly access ids via <root element>.ids property
+
+
+<DrawerLayout>:
+    orientation: "vertical"
+    MDLabel:
+        text: "Beers Criteria Application"
+        font_style: "Button"
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDLabel:
+        text: "Implementation based on 2019 publication"
+        font_style: "Caption"
+        size_hint_y: None
+        height: self.texture_size[1]
+    ScrollView:
+        MDList:
+            OneLineIconListItem:
+                text: "Beers Criteria Checker"
+                on_release: 
+                    root.screen_manager.current = "screen_beers"
+                    root.nav_drawer.set_state("closed")
+                    root.top_bar.title = "Beers Criteria checker"
+                IconLeftWidget:
+                    icon: "magnify"
+            OneLineIconListItem:
+                text: "Original publication"
+                on_release: 
+                    webbrowser.open('pubmed.ncbi.nlm.nih.gov/30693946')
+                IconLeftWidget:
+                    icon: "link"
+            OneLineIconListItem:
+                text: "Other resources"
+                on_release: 
+                    root.screen_manager.current = "screen_resources"
+                    root.nav_drawer.set_state("closed")
+                    root.top_bar.title = "Other resources"
+                IconLeftWidget:
+                    icon: "information"
+            OneLineIconListItem:
+                text: "App info"
+                on_release: 
+                    root.screen_manager.current = "screen_info"
+                    root.nav_drawer.set_state("closed")
+                    root.top_bar.title = "App information"
+                IconLeftWidget:
+                    icon: "information"
+
+
+<ScreenBeers>:
+    name: "screen_beers"
     BoxLayout:
         orientation: "vertical"
+
         BoxLayout:
+            id: entry
             orientation: "horizontal"
             size_hint_y: None # Set size_hint to none to manual set height
             height: sp(120)
-            TextInput:
+            MDTextFieldRect:
                 id: text_in1 # ID assigns the identifier of this object in the root object in python (i.e., RootLayout)
                 hint_text: "Enter drug names separated by commas (,), semicolons (;), or new lines. Names are standardized before checking against Beers rules. Components of combination drugs should be separated by '/'"
-                # height: 10
-            Button:
+                background_color: app.theme_cls.bg_light           
+            MDRectangleFlatButton:
                 text: "Check\ndrugs"
-                # height: 10
-                size_hint_x: 0.2
+                size_hint: 0.2, 1
                 on_press: app.checkBeers()
-            # Button:
-            #     text: "Test1"
-            #     height: 10
-            #     size_hint_x: 0.1
-            #     on_press: root.testFx1()
-            # Button:
-            #     text: "Test2"
-            #     height: 10
-            #     size_hint_x: 0.1
-            #     on_press: root.testFx2()
-            # Button:
-            #     text: "Test3"
-            #     height: 10
-            #     size_hint_x: 0.1
-            #     on_press: root.testFx3()
-            # Button:
-            #     text: "Test4"
-            #     height: 10
-            #     size_hint_x: 0.1
-            #     on_press: root.testFx4()
+                background_color: app.theme_cls.primary_color
         TextInput:
+            id: creatinine # ID assigns the identifier of this object in the root object in python (i.e., RootLayout)
             size_hint_y: None # Set size_hint to none to manual set height
             height: sp(30)
-            id: creatinine # ID assigns the identifier of this object in the root object in python (i.e., RootLayout)
             hint_text: "Creatinine clearance (mL/min, optional)"
+            background_color: app.theme_cls.bg_light 
             multiline: False
         AutoCompleter: # Inherits from TextInput
             id: autocompleter
             size_hint_y: None # Set size_hint to none to manual set height
-            hint_text: "Standardized drug name lookup:"
-            multiline: False
             height: sp(30)
+            hint_text: "Standardized drug name lookup:"
+            background_color: app.theme_cls.bg_light 
+            multiline: False
         ScrollView:
             id: scroll_view
             do_scroll_x: False
@@ -85,9 +116,43 @@ RootLayout:
                 hide_root: True
                 size_hint_y: None # Need to set this to none in order to use scrollview in the respective direction (x and y)
                 height: self.minimum_height # Bind height (used for scroll) to minimum_height which changes when children are expanded
-            # Accordion:
-            #     id: accordion
-            #     orientation: "vertical"
-            #     size_hint_y: None # Need to set this to none in order to use scrollview in the respective direction (x and y)
-            #     height: 50*8 # 50px for every element 
 
+<ScreenResources>:
+    name: "screen_resources"
+    ScrollView:
+        MDLabel:
+            text: "screen resources"
+
+<ScreenInfo>:
+    name: "screen_info"
+    ScrollView:
+        MDLabel:
+            text: "screen information"
+
+
+
+RootLayout:
+    # Need to add links from object ids to properties (which can be access via self. in python code)
+    # text_in1: text_in1 # [old] Assigns the call of display_label to an identifier within kv file - seems to have linked to an item now in ScreenBeers
+    id: rootlayout
+    orientation: "vertical"
+    MDTopAppBar:
+        id: top_bar
+        elevation: 0
+        title: "Beers Criteria checker"
+        left_action_items: [["menu", lambda x: app.drawNavigation()]]   
+    MDNavigationLayout:
+        ScreenManager:
+            id: screen_manager
+            ScreenBeers:
+            ScreenResources:
+            ScreenInfo:
+        MDNavigationDrawer:
+            id: nav_drawer
+            DrawerLayout:
+                nav_drawer: nav_drawer
+                screen_manager: screen_manager
+                top_bar: top_bar
+
+
+# Pass

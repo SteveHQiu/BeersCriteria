@@ -1,21 +1,30 @@
-import pickle, json, time, re
+import pickle, json, time, re, webbrowser, platform
 from difflib import SequenceMatcher
 from threading import Thread, main_thread, Event
 from queue import Queue
 
-import kivy
-from kivy.app import App
-from kivy.uix.label import Label # Imports Label element
-from kivy.uix.button import Button
+
+from kivymd.app import MDApp
+from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.list import MDList
+from kivymd.theming import ThemeManager, ThemableBehavior
+
+
+from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.boxlayout import BoxLayout # Imports layout call function which pulls from .kv file with the same name as the class that calls it
-from kivy.uix.widget import Widget
 from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
-from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.treeview import TreeView, TreeViewLabel
 from kivy.uix.popup import Popup
+
+from kivy.uix.widget import Widget
 from kivy.factory import Factory
 from kivy.clock import Clock
+
+
+if platform.system() == "Windows":
+    from kivy.core.window import Window
+    Window.size = (400, 600)
 
 # Test
 # Internals 
@@ -30,23 +39,12 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
     def __init__(self, **kwargs):
         super(RootLayout, self).__init__(**kwargs) # Calls the superconstructor 
         
-    def testFx1(self):
-        a = CDataFrame()
-    def testFx2(self):
-        a = CDataFrame({"col1":["1", "2", "3"], "col2":["1", "2", "3"]})
-    def testFx3(self):
-        with open("data/screen_std.dat", "rb") as file:
-            a = pickle.load(file)
-        print(a.columns)
-    def testFx4(self):
-        with open("data/interac_std.dat", "rb") as file:
-            a = pickle.load(file)
-        print(a.columns)
+
         
 class CPopup(Popup):
     pass
 
-class CButton(Button):
+class CButton(MDRaisedButton):
     pass
 
 class CScrollView(ScrollView):
@@ -106,7 +104,7 @@ class AutoCompleter(TextInput):
         cscrollviews = [l for l in parent_layout.children if type(l) == CScrollView]
         
         # Function of each button starts here
-        app = App.get_running_app()
+        app = MDApp.get_running_app()
         if app.root.ids.text_in1.text: # If the text input is not empty
             text_to_add = f", {btn.text}"
         else: # Assume empty text input
@@ -125,7 +123,31 @@ class CTreeView(TreeView):
         # return super().select_node(node)
     pass
 
-class BeersApp(App): 
+class DrawerLayout(BoxLayout):
+    pass
+
+class MDListDrawer(ThemableBehavior, MDList):
+    def set_color_item(self, instance_item):
+        '''Called when tap on a menu item.'''
+
+        # Set the color of the icon and text for the menu item.
+        for item in self.children:
+            if item.text_color == self.theme_cls.primary_color:
+                item.text_color = self.theme_cls.text_color
+                break
+        instance_item.text_color = self.theme_cls.primary_color
+
+class ScreenBeers(Screen):
+    pass
+
+class ScreenResources(Screen):
+    pass
+
+class ScreenInfo(Screen):
+    pass
+
+
+class BeersApp(MDApp):
     """
     This class inherits the App class from kivy
     The name of this class will also determine the name of the .kv files (for layout/design)
@@ -136,6 +158,12 @@ class BeersApp(App):
         super().__init__(**kwargs)
         self.finished_check = Event() # Cross-thread event to indicate whether or not drug checking has finished
         self.reports_queue = Queue() # Queue for nodes to be added 
+        self.theme_cls.theme_style = "Light"
+        self.theme_cls.primary_palette = "Blue"
+    
+    def drawNavigation(self):
+        self.root.ids.nav_drawer.set_state('open')
+        return
     
     
     def checkBeers(self):
@@ -224,11 +252,12 @@ class BeersApp(App):
         # Refer back to self events and popups to dismiss them
         self.finished_check.set()
         self.pop_up.dismiss()
-        
+
     
+
     
     # def build(self): # Returns the UI
-    #     root = RootLayout()
+        # root = RootLayout()
     #     return root # Return whatever root element you are using for the UI
         
 
