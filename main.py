@@ -349,9 +349,6 @@ class BeersApp(MDApp):
         self.root.ids.nav_drawer.set_state('open')
         return
     
-    
-
-
     def openLink(self, link):
         webbrowser.open(link)
 

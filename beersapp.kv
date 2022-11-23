@@ -48,7 +48,7 @@
             OneLineIconListItem:
                 text: "Original publication"
                 on_release: 
-                    app.openLink('https://pubmed.ncbi.nlm.nih.gov/30693946/')
+                    webbrowser.open('https://pubmed.ncbi.nlm.nih.gov/30693946/')
                 IconLeftWidget:
                     icon: "link"
             OneLineIconListItem:
@@ -134,9 +134,26 @@
 
 <ScreenResources>:
     name: "screen_resources"
-    ScrollView:
-        MDLabel:
-            text: "screen resources"
+    MDScrollView:
+        MDList:
+            OneLineAvatarIconListItem:
+                text: "WebMD drug interaction checker"
+                on_release: 
+                    webbrowser.open('https://www.webmd.com/interaction-checker/default.htm')
+                ImageLeftWidget: 
+                    source: "data/webmd.png"
+            OneLineAvatarIconListItem:
+                text: "Medscape drug interaction checker"
+                on_release: 
+                    webbrowser.open('https://reference.medscape.com/drug-interactionchecker')
+                ImageLeftWidget: 
+                    source: "data/medscape.png"
+            OneLineAvatarIconListItem:
+                text: "Drugs.com interaction checker"
+                on_release: 
+                    webbrowser.open('https://www.drugs.com/drug_interactions.html')
+                ImageLeftWidget: 
+                    source: "data/drugscom.png"
 
 <ScreenInfo>:
     name: "screen_info"
