@@ -2,6 +2,7 @@ import pickle, json, time, re, webbrowser, platform
 from difflib import SequenceMatcher
 from threading import Thread, main_thread, Event
 from queue import Queue
+from dataclasses import dataclass
 
 
 from kivymd.app import MDApp
@@ -13,7 +14,7 @@ from kivymd.uix.scrollview import MDScrollView
 from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelTwoLine
 from kivymd.uix.boxlayout import MDBoxLayout
 
-
+from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.boxlayout import BoxLayout # Imports layout call function which pulls from .kv file with the same name as the class that calls it
 from kivy.uix.textinput import TextInput
@@ -41,6 +42,19 @@ with open("data/drugdict.json", "r") as file:
     DICT: dict = json.load(file)
 
 # Dataclasses
+
+@dataclass
+class RawReportItem:
+    """
+    Container for strings to be loaded into widgets
+    Bridge between calculation thread and rendering main thread
+    """
+    
+    text: str
+    secondary: str
+    icon: str
+    reports: list[str]
+    
 
 
 # Kivy classes
@@ -159,9 +173,28 @@ class ScreenBeers(Screen):
         
     def checkBeers(self):
         # Note that graphics will not update until this function reaches return statement/end of fx definition        
+        sub_cont = BoxLayout(orientation="vertical")
+        sub_item = MDExpansionPanel(
+            icon="information",
+            content=MDLabel(text="item.reports[0]"),
+            panel_cls=MDExpansionPanelTwoLine(
+                text="item.text",
+                secondary_text="item.secondary"
+            )
+        )
+        sub_cont.add_widget(sub_item)
+        report_item = MDExpansionPanel(
+            icon="information",
+            content=sub_cont,
+            panel_cls=MDExpansionPanelTwoLine(
+                text="item.text",
+                secondary_text="item.secondary"
+            )
+        )
+        self.ids.report.add_widget(report_item)
         
-        
-        
+        return
+
         report_cont: Report = self.ids.report
         report_cont.clear_widgets()
         
@@ -199,23 +232,20 @@ class ScreenBeers(Screen):
         
         while True:
             while not self.reports_queue.empty():
-                nodes: tuple[str, str] = self.reports_queue.get()
-                self._addReportItem(nodes[0], nodes[1]) # Add these nodes using the main thread
+                item: RawReportItem = self.reports_queue.get()
+                self._addReportItem(item) # Add these nodes using the main thread
             if self.finished_check.is_set(): # Waiting on separate thread to finish 
                 self.pop_up.dismiss() # Backup pop-up dismisser in case separate thread does not handle it 
                 break
             time.sleep(0.01) # In case other threads need to run extensive loops 
         
-    def _addReportItem(self, l1_info, l2_info = None): # Passing processed information into main thread
+    def _addReportItem(self, item: RawReportItem): # Passing processed information into main thread
         report_item = MDExpansionPanel(
-            icon="information",
-            content=ThreeLineListItem(
-                text="label",
-                tertiary_text=l2_info,
-                ),
+            icon=item.icon,
+            content=MDLabel(text=item.reports[0]),
             panel_cls=MDExpansionPanelTwoLine(
-                text=l1_info,
-                secondary_text="secondary text"
+                text=item.text,
+                secondary_text=item.secondary
             )
         )
         self.ids.report.add_widget(report_item)
@@ -237,23 +267,44 @@ class ScreenBeers(Screen):
         print("Standardized: ", drugs_std)
         
         
-        l1_info = f"{len(drugs_std)} standardized drugs found"
-        l2_info = f"{drugs_std}"
-        self.reports_queue.put((l1_info, l2_info))
+        l2_info = ", ".join([d.capitalize() for d in drugs_std]) # Join drug names after capitalizing
+        
+        if len(drugs_std) == 0:
+            pill_icon = "pill-off"
+        elif len(drugs_std) == 1:
+            pill_icon = "pill"
+        elif len(drugs_std) > 1:
+            pill_icon = "pill-multiple"
+            
+        raw_report_item = RawReportItem(
+            text=f"{len(drugs_std)} standardized drugs found",
+            secondary=l2_info,
+            icon=pill_icon,
+            reports=[l2_info]
+        )
+        self.reports_queue.put(raw_report_item)
         
         # Drug screening
         for drug in drugs_std:
-            drug_warning = checkDrug(drug, creat_num=creat_num, std=False)
-            if drug_warning:
-                l1_info = f"Potential issues with {drug}"
-                l2_info = f"{drug_warning}"
-                self.reports_queue.put((l1_info, l2_info))
+            drug_warnings = checkDrug(drug, creat_num=creat_num, std=False)
+            if drug_warnings:
+                raw_report_item = RawReportItem(
+                    text=F"{drug.capitalize()}",
+                    secondary=F"Potential issue with {drug.capitalize()}",
+                    icon="information",
+                    reports=[drug_warnings]
+                )
+                self.reports_queue.put(raw_report_item)
         # Interaction reporting
         for offending_drugs, report in checkInterac(drugs_std, std=False):
-            l1_info = f"Interaction between {offending_drugs}"
-            l2_info = f"{report}"
-            self.reports_queue.put((l1_info, l2_info))
-        
+            raw_report_item = RawReportItem(
+                text=F"{offending_drugs}",
+                secondary=F"Interaction between {offending_drugs}",
+                icon="format-horizontal-align-center",
+                reports=[report]
+            )
+            self.reports_queue.put(raw_report_item)
+
         # Refer back to self events and popups to dismiss them
         self.finished_check.set()
         self.pop_up.dismiss()
