@@ -14,6 +14,7 @@ from kivymd.uix.list import MDList, TwoLineIconListItem, IconLeftWidget
 from kivymd.uix.scrollview import MDScrollView
 from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelTwoLine
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.dialog import MDDialog
 
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -51,7 +52,9 @@ class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayo
     def __init__(self, **kwargs):
         super(RootLayout, self).__init__(**kwargs) # Calls the superconstructor 
         
-class CPopup(Popup):
+class CPopup(MDDialog):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
     pass
 
 class CButton(MDRectangleFlatButton):
