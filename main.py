@@ -256,48 +256,66 @@ class ScreenBeers(Screen):
         print("Standardized: ", drugs_std)
         
         
-        l2_info = ", ".join([d.capitalize() for d in drugs_std]) # Join drug names after capitalizing
-        
+
         if len(drugs_std) == 0:
             pill_icon = "pill-off"
-        elif len(drugs_std) == 1:
-            pill_icon = "pill"
-        elif len(drugs_std) > 1:
+            prim_text = f"No standardized drugs found"
+            sec_text = F"Drug names may be misspelled"
+            sub_item = RawReportItem(
+                text=f"No standardized drugs have been found after checking the input against our database. Drug names may be misspelled. The 'Standardized drug name lookup' input box above can be used to search for drug entries present in the database",
+                node_type=NodeType.LABEL,
+            )
+
+        elif len(drugs_std) >= 1:
             pill_icon = "pill-multiple"
+            prim_text = f"{len(drugs_std)} standardized drugs found"
+            if len(drugs_std) == 1:
+                prim_text = f"1 standardized drug found"
+                pill_icon = "pill"
+                
+            sec_text = ", ".join([d.capitalize() for d in drugs_std])  # Join drug names after capitalizing
+            sub_item = RawReportItem(
+                text=sec_text,
+                node_type=NodeType.LABEL,
+            )
             
+
         raw_report_item = RawReportItem(
-            text=f"{len(drugs_std)} standardized drugs found",
-            secondary=l2_info,
+            text=prim_text,
+            secondary=sec_text,
             icon=pill_icon,
-            children=[]
+            children=[sub_item],
+            node_type=NodeType.ICON,
         )
+        
         self.reports_queue.put(raw_report_item)
         
+        report_items = 0
         # Drug screening
         for drug in drugs_std:
             drug_warnings = checkDrug(drug, creat_num=creat_num, std=False)
             if drug_warnings:
-                raw_report_item = RawReportItem(
-                    text=F"{drug.capitalize()}",
-                    secondary=F"Potential issue with {drug.capitalize()}",
-                    icon="information",
-                    children=[RawReportItem(
-                        text="test1", secondary="test1", icon="circle-outline",
-                        children=[RawReportItem(
-                            text="test2", node_type=NodeType.LABEL
-                        )]
-                    )]
-                )
-                self.reports_queue.put(raw_report_item)
+                report_items += 1
+                self.reports_queue.put(drug_warnings)
         # Interaction reporting
-        for offending_drugs, report in checkInterac(drugs_std, std=False):
-            raw_report_item = RawReportItem(
-                text=F"{offending_drugs}",
-                secondary=F"Interaction between {offending_drugs}",
-                icon="format-horizontal-align-center",
-                children=[]
+        for drug_interac in checkInterac(drugs_std, std=False):
+            report_items += 1
+            self.reports_queue.put(drug_interac)
+        
+        # Check if drugs present but no report items
+        if report_items == 0 and len(drugs_std) >= 1:
+            sub_item = RawReportItem(
+                text=f"No medications of concern related the Beers Criteria guidlines have been detected after checking input against our database. However, other interactions/concerns aside from those listed in the Beers Criteria may still exist. For more general interaction checkers, please see the links in the 'Other Resources' tab",
+                node_type=NodeType.LABEL,
             )
-            self.reports_queue.put(raw_report_item)
+            none_item = RawReportItem(
+                text=f"No medications of concern found",
+                secondary=F"Med list is OK from Beers Criteria perspective",
+                icon="check",
+                children=[sub_item],
+                node_type=NodeType.ICON,
+            )
+            self.reports_queue.put(none_item)
 
         # Refer back to self events and popups to dismiss them
         self.finished_check.set()

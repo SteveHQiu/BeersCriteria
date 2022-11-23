@@ -3,6 +3,7 @@ from re import Match
 
 import drugstd
 from custom_libs import CGraph, hopcroft_karp_matching, CDataFrame
+from internals import NodeType, RawReportItem
 
 # Serialize files (Uncomment to export new .dat files On PC)
 # with open("data/screen_std.dat", "w+b") as file:
@@ -29,35 +30,60 @@ def checkDrug(drug: str, creat_num: float = 0, std = True):
         entry = DF_S.findRows("ExStandardized", drug) # Take first item
         print(f"Found {len(entry)} entries")
         creat_num = creat_num
-        report = ""
+        entries = []
         for ind, row in entry.iterrows():
-            row_report = ""
             drug_origin = row["Drug"]
             rec = row["Recommendation"]
+            
             rationale = row["Rationale"]
             condition = row["Condition"]
             creat_rule = row["Creatinine Clearance"]
             
-            if drug_origin and type(drug_origin) == str:
-                row_report += f"[b]Drug[/b]: {drug_origin}\n"
+
+            rationale_details = F"[b]Beers Criteria Entry[/b]: {drug_origin}\n[b]Recommendation[/b]: {rec}\n" 
+            # Fill rationale with additional details as available
             if condition and type(condition) == str:
-                row_report += f"[b]Condition[/b]: {condition}\n"
+                rationale_details += f"[b]Condition[/b]: {condition}\n"
             if creat_rule and type(creat_rule) == str:
-                row_report += f"[b]Creatinine clearance threshold (mL/min)[/b]: {creat_rule}\n"
-            if rec and type(rec) == str:
-                row_report += f"[b]Recommendation[/b]: {rec}\n"
+                rationale_details += f"[b]Creatinine clearance threshold (mL/min)[/b]: {creat_rule}\n"
             if rationale and type(rationale) == str:
-                row_report += f"[b]Rationale[/b]: {rationale}\n"
-            row_report += "[b]====================[/b]\n\n"
+                rationale_details += f"[b]Rationale[/b]: {rationale}"
+                
+            
             
             if creat_num and creat_rule: # If creatinine number and rule are present, check number against the rule
                 if not _checkIneq(creat_rule, creat_num):
-                    row_report = "" # Clear row report for this rule if it doesn't meet requirements
+                    continue # Skip creation of Report Entry if filtered by creatinine
             
-            report += row_report
             
-        return report
-    return ""
+
+            sub_entry = RawReportItem(
+                text=rationale_details,
+                node_type=NodeType.LABEL
+            )
+            main_entry = RawReportItem(
+                text=F"{drug_origin}",
+                secondary=F"{rec}",
+                icon="information",
+                children=[sub_entry],
+                node_type=NodeType.ICON
+            )
+            
+            entries.append(main_entry)
+        
+        if entries:
+            root_entry = RawReportItem(
+                text=F"{drug.capitalize()}",
+                secondary=F"{len(entries)} potential issues with {drug.capitalize()}",
+                icon="information",
+                children=entries,
+                node_type=NodeType.ICON
+            )
+            return root_entry
+        else:
+            return None # Will return none if all entries filtered out by creatinine
+        
+    return None # Will return none if no matches
 
 def _checkIneq(rules_str: str, num) -> bool:
     # Check inequality string against a number
@@ -97,7 +123,7 @@ def _checkIneq(rules_str: str, num) -> bool:
     return all(checks) # Only return true if all rules are satisfied
 
 def checkInterac(drugs: list[str], std = True):
-    interactions: list[tuple[str, str]] = []
+    interactions: list[RawReportItem] = []
     if std:
         drugs = [drugstd.standardize([d])[0] for d in drugs]
         drugs = [d for d in drugs if d] # Filter empty data types
@@ -114,17 +140,30 @@ def checkInterac(drugs: list[str], std = True):
                 members_str: str = row[drug_cat]
                 members: list[str] = json.loads(members_str)
                 for drug in drugs:
-                    drug = drug.upper()
+                    # drug = drug.upper() # Should already be standardized
                     if drug in members: # If there is membership, it hasn't been tracked already, and the category has not already been satisfied
                         graph.add_edge(drug_cat, drug)
             max_match = hopcroft_karp_matching(graph, cols)
             if len(max_match)/2 >= len(cols): # Divide by 2 since max match output is undirected
-                drug_origin: dict[str, str] = {m: max_match[m] for m in max_match if "Drug" in m} # Filter for mappings with drug categories as key
+                drug_origin: dict[str, str] = {m: max_match[m].capitalize() for m in max_match if "Drug" in m} # Filter for mappings with drug categories as key
                 offending_drugs: list[str] = [drug_origin[k] for k in drug_origin]
                 rec = row["Recommendation"]
                 rationale = row["Risk Rationale"]
                 rule_report = f"[b]Drugs[/b]: {drug_origin}\n[b]Recommendation[/b]: {rec}\n[b]Rationale[/b]: {rationale}"
-                interactions.append((str(offending_drugs), rule_report))
+                
+                sub_entry = RawReportItem(
+                    text=rule_report,
+                    node_type=NodeType.LABEL
+                )
+                main_entry = RawReportItem(
+                    text=", ".join(offending_drugs),
+                    secondary=F"Interaction between above {len(offending_drugs)} drugs",
+                    icon="format-horizontal-align-center",
+                    children=[sub_entry],
+                    node_type=NodeType.ICON
+                )
+            
+                interactions.append(main_entry)
     return interactions
 
 
