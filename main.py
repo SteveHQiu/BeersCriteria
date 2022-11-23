@@ -15,6 +15,7 @@ from kivymd.uix.scrollview import MDScrollView
 from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelTwoLine
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.dialog import MDDialog
+from kivymd.uix.textfield import MDTextField, MDTextFieldRect
 
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen

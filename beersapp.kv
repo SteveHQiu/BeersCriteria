@@ -100,7 +100,9 @@
             MDTextFieldRect:
                 id: text_in1 # ID assigns the identifier of this object in the root object in python (i.e., RootLayout)
                 hint_text: "Enter drug names separated by commas (,), semicolons (;), or new lines. Names are standardized before checking against Beers rules. Components of combination drugs should be separated by '/'"
-                background_color: app.theme_cls.bg_light           
+                background_normal: "data/background.png"
+                background_color: app.theme_cls.bg_light 
+
             MDRectangleFlatButton:
                 text: "Check\ndrugs"
                 size_hint: 0.2, 1
@@ -111,6 +113,7 @@
             size_hint_y: None # Set size_hint to none to manual set height
             height: sp(30)
             hint_text: "Creatinine clearance (mL/min, optional)"
+            background_normal: "data/background.png"
             background_color: app.theme_cls.bg_light 
             multiline: False
         AutoCompleter: # Inherits from TextInput
@@ -118,6 +121,7 @@
             size_hint_y: None # Set size_hint to none to manual set height
             height: sp(30)
             hint_text: "Standardized drug name lookup:"
+            background_normal: "data/background.png"
             background_color: app.theme_cls.bg_light 
             multiline: False
         ScrollView:
@@ -157,9 +161,82 @@
 
 <ScreenInfo>:
     name: "screen_info"
-    ScrollView:
-        MDLabel:
-            text: "screen information"
+    MDScrollView:
+        MDList:
+
+            Label:
+                text: "[b]Drug standardization[/b]:\n[color=808080]An adapted version of the mlbernauer/drugstandards library is used to convert brand name drugs to active ingredients and converge drug synonyms. Levenshtein was replaced with Difflib SequenceMatcher to match partially misspelled drugs to registered drug name entries. The original drug database from this library was also processed to improve formatting of drug names (e.g., removing counterions)[/color]"
+                color: "black"
+                markup: True
+                text_size: self.width, None
+                size_hint_y: None
+                height: self.texture_size[1]  # the size needed to fit the text
+                padding: (sp(10), sp(10))
+            MDSeparator:
+
+            Label:
+                text: "[b]Beers Criteria translation[/b]:\n[color=808080]Tables from the 2019 Beers Criteria publication were manually translated into rules with drug categories being mapped to distinct drug entities (e.g., Benzodiazepines being mapped to Lorazepam, Haloperidol, Alprazolam, etc.). Hence, the input drugs need to be matched to these mapped entities in order to trigger the corresponding rule.[/color]"
+                color: "black"
+                markup: True
+                text_size: self.width, None
+                size_hint_y: None
+                height: self.texture_size[1]  # the size needed to fit the text
+                padding: (sp(10), sp(10))
+            MDSeparator:
+
+            Label:
+                text: "[b]Data storage[/b]:\n[color=808080]Beers Criteria translations are stored in custom dataframe classes rather than through pandas to minimize dependencies. During runtime, rules are retrieved from cached versions of the rule-containing custom dataframes to improve performance. Drug standardization information is stored and loaded via a JSON file.[/color]"
+                color: "black"
+                markup: True
+                text_size: self.width, None
+                size_hint_y: None
+                height: self.texture_size[1]  # the size needed to fit the text
+                padding: (sp(10), sp(10))
+            MDSeparator:
+
+            Label:
+                text: "[b]Interaction checking[/b]:\n[color=808080]The Hopcraft Karp matching algorithm is used to check for interactions between input drugs based on the Beers Criteria rules. This is done via a custom network graph class rather than NetworkX to reduce dependencies.[/color]"
+                color: "black"
+                markup: True
+                text_size: self.width, None
+                size_hint_y: None
+                height: self.texture_size[1]  # the size needed to fit the text
+                padding: (sp(10), sp(10))
+            MDSeparator:
+
+            Label:
+                text: "[b]Graphical interface[/b]:\n[color=808080]The app's graphical interface was written in Python via the Kivy and KivyMD libraries[/color]"
+                color: "black"
+                markup: True
+                text_size: self.width, None
+                size_hint_y: None
+                height: self.texture_size[1]  # the size needed to fit the text
+                padding: (sp(10), sp(10))
+            MDSeparator:
+
+            Label:
+                text: "[b]Source code[/b]:\n[color=808080][ref=https://github.com/EndorphinSponge/BeersCriteria]github.com/EndorphinSponge/BeersCriteria[/ref][/color]"
+                color: "black"
+                markup: True
+                text_size: self.width, None
+                size_hint_y: None
+                height: self.texture_size[1]  # the size needed to fit the text
+                padding: (sp(10), sp(10))
+                on_ref_press:
+                    webbrowser.open('https://github.com/EndorphinSponge/BeersCriteria')
+            MDSeparator:
+
+            Label:
+                text: "[b]Contact[/b]:\n[color=808080]Developed by Steven Qiu and Sarah Roberts\nsteven.qiu@medportal.ca\nsarah.roberts@medportal.ca[/color]"
+                color: "black"
+                markup: True
+                text_size: self.width, None
+                size_hint_y: None
+                height: self.texture_size[1]  # the size needed to fit the text
+                padding: (sp(10), sp(10))
+                on_ref_press:
+                    webbrowser.open('https://github.com/EndorphinSponge/BeersCriteria')
+            MDSeparator:
 
 
 
