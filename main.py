@@ -2,14 +2,15 @@ import pickle, json, time, re, webbrowser, platform
 from difflib import SequenceMatcher
 from threading import Thread, main_thread, Event
 from queue import Queue
-from dataclasses import dataclass
+
+
 
 
 from kivymd.app import MDApp
 from kivymd.theming import ThemeManager, ThemableBehavior
 from kivymd.uix.button import MDRaisedButton, MDRectangleFlatButton
 from kivymd.uix.label import MDLabel
-from kivymd.uix.list import MDList, OneLineListItem, TwoLineListItem, ThreeLineListItem
+from kivymd.uix.list import MDList, TwoLineIconListItem, IconLeftWidget
 from kivymd.uix.scrollview import MDScrollView
 from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelTwoLine
 from kivymd.uix.boxlayout import MDBoxLayout
@@ -19,7 +20,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.boxlayout import BoxLayout # Imports layout call function which pulls from .kv file with the same name as the class that calls it
 from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
-from kivy.uix.treeview import TreeView, TreeViewLabel
+from kivy.uix.treeview import TreeView, TreeViewLabel, TreeViewNode
 from kivy.uix.popup import Popup
 
 from kivy.uix.widget import Widget
@@ -31,30 +32,18 @@ from kivy.clock import Clock
 import drugstd
 from check_drug import checkDrug, checkInterac
 from custom_libs import CDataFrame
+from internals import NodeType, RawReportItem
 
 # Windows rendering
 if platform.system() == "Windows":
     from kivy.core.window import Window
-    Window.size = (400, 600)
+    Window.size = (400, 650)
     
 # Constants
 with open("data/drugdict.json", "r") as file:
     DICT: dict = json.load(file)
 
-# Dataclasses
 
-@dataclass
-class RawReportItem:
-    """
-    Container for strings to be loaded into widgets
-    Bridge between calculation thread and rendering main thread
-    """
-    
-    text: str
-    secondary: str
-    icon: str
-    reports: list[str]
-    
 
 
 # Kivy classes
@@ -141,15 +130,26 @@ class AutoCompleter(TextInput):
         for cscrollview in cscrollviews:
             parent_layout.remove_widget(cscrollview)
             
-class Report(BoxLayout):
-    
-    
-    # def select_node(self, node):
-    #     self.toggle_node(node) 
-    #     # return super().select_node(node)
+class CTreeView(TreeView):
+    def select_node(self, node):
+        self.toggle_node(node) 
+        # return super().select_node(node)
     pass
 
+class CTreeViewIcon(TreeViewNode, TwoLineIconListItem):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        
+    def changeIcon(self, icon): # Workaround to changing icon without instantiating new widget
+        self.ids.l_icon.icon = icon
+        
+    pass
 
+class CTreeViewLabel(TreeViewLabel):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        
+    pass
 
 class DrawerLayout(BoxLayout):
     pass
@@ -173,30 +173,11 @@ class ScreenBeers(Screen):
         
     def checkBeers(self):
         # Note that graphics will not update until this function reaches return statement/end of fx definition        
-        sub_cont = BoxLayout(orientation="vertical")
-        sub_item = MDExpansionPanel(
-            icon="information",
-            content=MDLabel(text="item.reports[0]"),
-            panel_cls=MDExpansionPanelTwoLine(
-                text="item.text",
-                secondary_text="item.secondary"
-            )
-        )
-        sub_cont.add_widget(sub_item)
-        report_item = MDExpansionPanel(
-            icon="information",
-            content=sub_cont,
-            panel_cls=MDExpansionPanelTwoLine(
-                text="item.text",
-                secondary_text="item.secondary"
-            )
-        )
-        self.ids.report.add_widget(report_item)
-        
-        return
 
-        report_cont: Report = self.ids.report
-        report_cont.clear_widgets()
+
+        tree_view: CTreeView = self.ids.tree_view
+        for node in [i for i in tree_view.iterate_all_nodes()]:
+            tree_view.remove_node(node) # Clear nodes   
         
         creat_str: str = self.ids.creatinine.text
         try: 
@@ -239,21 +220,29 @@ class ScreenBeers(Screen):
                 break
             time.sleep(0.01) # In case other threads need to run extensive loops 
         
-    def _addReportItem(self, item: RawReportItem): # Passing processed information into main thread
-        report_item = MDExpansionPanel(
-            icon=item.icon,
-            content=MDLabel(text=item.reports[0]),
-            panel_cls=MDExpansionPanelTwoLine(
-                text=item.text,
-                secondary_text=item.secondary
-            )
-        )
-        self.ids.report.add_widget(report_item)
-        # tree_view: TreeView = self.root.ids.tree_view
-        # l1_node = tree_view.add_node(TreeViewLabel(text=l1_info))
-        # if l2_info: # If there's info for subnode
-        #     tree_view.add_node(TreeViewLabel(text=l2_info, markup=True), l1_node)
+    def _addReportItem(self, rep_item: RawReportItem): # Passing processed information into main thread
+        tree_view: CTreeView = self.ids.tree_view
         
+        def _genItem(item: RawReportItem, parent_item = None):
+            # Need internal fxn to separate self object from recursion of tree nodes
+            if item.node_type == NodeType.ICON:
+                tree_icon = CTreeViewIcon(text=item.text, secondary_text=item.secondary)
+                tree_icon.changeIcon(item.icon)
+                
+                cur_node = tree_view.add_node(tree_icon, parent_item) # If parent_item == None, will add to root
+
+                
+            elif item.node_type == NodeType.LABEL:
+                cur_node = tree_view.add_node(CTreeViewLabel(text=item.text, markup=True), parent_item)
+            
+            if item.children:
+                for l2_item in item.children:
+                    _genItem(l2_item, cur_node)
+        
+        _genItem(rep_item)
+            
+
+
     
     def parseDrugs(self, creat_num: float, text_in: str):
         # Connected to self.finished_check and self.reports_queue for multi-threading
@@ -280,7 +269,7 @@ class ScreenBeers(Screen):
             text=f"{len(drugs_std)} standardized drugs found",
             secondary=l2_info,
             icon=pill_icon,
-            reports=[l2_info]
+            children=[]
         )
         self.reports_queue.put(raw_report_item)
         
@@ -292,7 +281,12 @@ class ScreenBeers(Screen):
                     text=F"{drug.capitalize()}",
                     secondary=F"Potential issue with {drug.capitalize()}",
                     icon="information",
-                    reports=[drug_warnings]
+                    children=[RawReportItem(
+                        text="test1", secondary="test1", icon="circle-outline",
+                        children=[RawReportItem(
+                            text="test2", node_type=NodeType.LABEL
+                        )]
+                    )]
                 )
                 self.reports_queue.put(raw_report_item)
         # Interaction reporting
@@ -301,7 +295,7 @@ class ScreenBeers(Screen):
                 text=F"{offending_drugs}",
                 secondary=F"Interaction between {offending_drugs}",
                 icon="format-horizontal-align-center",
-                reports=[report]
+                children=[]
             )
             self.reports_queue.put(raw_report_item)
 

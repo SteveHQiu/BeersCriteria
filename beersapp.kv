@@ -24,6 +24,7 @@
         size_hint_x: None
         width: self.minimum_width
 
+<Autocompleter>:
 
 <DrawerLayout>:
     orientation: "vertical"
@@ -71,7 +72,23 @@
                 IconLeftWidget:
                     icon: "information"
 
-<Report>:
+<CTreeView>:
+
+<CTreeViewIcon>:
+    _txt_left_pad: sp(50) # Default 72dp, reminder that sp is dp but scaled by font as well
+    _txt_top_pad: sp(5) # Default 15dp
+    _txt_bot_pad: sp(5) # Default 15dp
+    _height: sp(50) # Special property, normal "height doesn't affect it"
+    # theme_text_color: "Custom" # To allow custom setting of color
+    # text_color: app.theme_cls.primary_color
+    IconLeftWidget:
+        id: l_icon
+        icon: "information"
+        _default_icon_pad: 0 # So that it sits closer to left
+        # theme_text_color: "Custom" # To allow custom setting of color
+        # icon_color: app.theme_cls.primary_color
+
+<CTreeViewLabel>:
 
 <ScreenBeers>:
     name: "screen_beers"
@@ -110,14 +127,13 @@
             id: scroll_view
             do_scroll_x: False
             do_scroll_y: True
-            Report:
-                id: report
-                orientation: "vertical"
+            CTreeView:
+                id: tree_view
+                root_options: dict(text='Checking drug entries against database...')
+                hide_root: True
                 size_hint_y: None # Need to set this to none in order to use scrollview in the respective direction (x and y)
                 height: self.minimum_height # Bind height (used for scroll) to minimum_height which changes when children are expanded
 
-                # root_options: dict(text='Checking drug entries against database...')
-                # hide_root: True
 
 <ScreenResources>:
     name: "screen_resources"
