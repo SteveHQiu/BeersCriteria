@@ -5,9 +5,10 @@ from queue import Queue
 
 
 from kivymd.app import MDApp
-from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.button import MDRaisedButton, MDRectangleFlatButton
 from kivymd.uix.list import MDList
 from kivymd.theming import ThemeManager, ThemableBehavior
+from kivymd.uix.scrollview import MDScrollView
 
 
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -22,35 +23,35 @@ from kivy.factory import Factory
 from kivy.clock import Clock
 
 
-if platform.system() == "Windows":
-    from kivy.core.window import Window
-    Window.size = (400, 600)
-
 # Test
 # Internals 
 import drugstd
 from check_drug import checkDrug, checkInterac
 from custom_libs import CDataFrame
 
+
+if platform.system() == "Windows":
+    from kivy.core.window import Window
+    Window.size = (400, 600)
+    
 with open("data/drugdict.json", "r") as file:
     DICT: dict = json.load(file)
+
 
 class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayout class 
     def __init__(self, **kwargs):
         super(RootLayout, self).__init__(**kwargs) # Calls the superconstructor 
         
-
-        
 class CPopup(Popup):
     pass
 
-class CButton(MDRaisedButton):
+class CButton(MDRectangleFlatButton):
     pass
 
-class CScrollView(ScrollView):
+class CScrollView(MDScrollView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.id = "testid"
+        # self.id = "testid"
     pass
 
 class AutoCompleter(TextInput):
@@ -73,7 +74,7 @@ class AutoCompleter(TextInput):
         for word in DICT:
             if text in word:
                 matches.append(word)
-        dict_dist = {i: SequenceMatcher(a=text, b=i).ratio() for i in matches}
+        dict_dist = {i.lower(): SequenceMatcher(a=text, b=i).ratio() for i in matches} # Lowercase labels
         list_dist = sorted(dict_dist.items(), key=lambda x: x[1], reverse=True) # Sort by value
         top_matches = list_dist[:5] # Take top 5
         self.suggestions = [i[0] for i in top_matches] # Fetch strs from distance tuples
@@ -105,13 +106,16 @@ class AutoCompleter(TextInput):
         
         # Function of each button starts here
         app = MDApp.get_running_app()
-        if app.root.ids.text_in1.text: # If the text input is not empty
+        main_screen = app.root.ids.screen_beers
+        text_input = main_screen.ids.text_in1
+        
+        if main_screen.ids.text_in1.text: # If the text input is not empty
             text_to_add = f", {btn.text}"
         else: # Assume empty text input
             text_to_add = f"{btn.text}"
-        app.root.ids.text_in1.text += text_to_add
+        main_screen.ids.text_in1.text += text_to_add
         self.text = ""
-        # Funcction of each buttons ends here 
+        # Function of each buttons ends here 
         
         self.suggestions = []
         for cscrollview in cscrollviews:
@@ -138,6 +142,9 @@ class MDListDrawer(ThemableBehavior, MDList):
         instance_item.text_color = self.theme_cls.primary_color
 
 class ScreenBeers(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        
     pass
 
 class ScreenResources(Screen):
@@ -253,7 +260,8 @@ class BeersApp(MDApp):
         self.finished_check.set()
         self.pop_up.dismiss()
 
-    
+    def openLink(self, link):
+        webbrowser.open(link)
 
     
     # def build(self): # Returns the UI

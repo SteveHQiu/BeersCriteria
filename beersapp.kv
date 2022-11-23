@@ -11,8 +11,8 @@
         padding: dp(10), dp(10)
 
 <CButton>:
-    size: self.texture_size
-    padding: dp(10), dp(10)
+    size_hint_y: 1 # Otherwise button is expanded to fit size of text and overflows
+
     
 <CScrollView>:
     id: cscrollview
@@ -52,7 +52,7 @@
             OneLineIconListItem:
                 text: "Original publication"
                 on_release: 
-                    webbrowser.open('pubmed.ncbi.nlm.nih.gov/30693946')
+                    app.openLink('https://pubmed.ncbi.nlm.nih.gov/30693946/')
                 IconLeftWidget:
                     icon: "link"
             OneLineIconListItem:
@@ -145,8 +145,11 @@ RootLayout:
         ScreenManager:
             id: screen_manager
             ScreenBeers:
+                id: screen_beers
             ScreenResources:
+                id: screen_resources
             ScreenInfo:
+                id: screen_info
         MDNavigationDrawer:
             id: nav_drawer
             DrawerLayout:
