@@ -5,10 +5,13 @@ from queue import Queue
 
 
 from kivymd.app import MDApp
-from kivymd.uix.button import MDRaisedButton, MDRectangleFlatButton
-from kivymd.uix.list import MDList
 from kivymd.theming import ThemeManager, ThemableBehavior
+from kivymd.uix.button import MDRaisedButton, MDRectangleFlatButton
+from kivymd.uix.label import MDLabel
+from kivymd.uix.list import MDList, OneLineListItem, TwoLineListItem, ThreeLineListItem
 from kivymd.uix.scrollview import MDScrollView
+from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelTwoLine
+from kivymd.uix.boxlayout import MDBoxLayout
 
 
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -23,21 +26,24 @@ from kivy.factory import Factory
 from kivy.clock import Clock
 
 
-# Test
 # Internals 
 import drugstd
 from check_drug import checkDrug, checkInterac
 from custom_libs import CDataFrame
 
-
+# Windows rendering
 if platform.system() == "Windows":
     from kivy.core.window import Window
     Window.size = (400, 600)
     
+# Constants
 with open("data/drugdict.json", "r") as file:
     DICT: dict = json.load(file)
 
+# Dataclasses
 
+
+# Kivy classes
 class RootLayout(BoxLayout): # Constructs a UI element based on the kivy BoxLayout class 
     def __init__(self, **kwargs):
         super(RootLayout, self).__init__(**kwargs) # Calls the superconstructor 
@@ -74,7 +80,7 @@ class AutoCompleter(TextInput):
         for word in DICT:
             if text in word:
                 matches.append(word)
-        dict_dist = {i.lower(): SequenceMatcher(a=text, b=i).ratio() for i in matches} # Lowercase labels
+        dict_dist = {i.capitalize(): SequenceMatcher(a=text, b=i).ratio() for i in matches} # Convert labels to lowercase with capitalized first char
         list_dist = sorted(dict_dist.items(), key=lambda x: x[1], reverse=True) # Sort by value
         top_matches = list_dist[:5] # Take top 5
         self.suggestions = [i[0] for i in top_matches] # Fetch strs from distance tuples
@@ -121,11 +127,15 @@ class AutoCompleter(TextInput):
         for cscrollview in cscrollviews:
             parent_layout.remove_widget(cscrollview)
             
-class CTreeView(TreeView):
-    def select_node(self, node):
-        self.toggle_node(node) 
-        # return super().select_node(node)
+class Report(BoxLayout):
+    
+    
+    # def select_node(self, node):
+    #     self.toggle_node(node) 
+    #     # return super().select_node(node)
     pass
+
+
 
 class DrawerLayout(BoxLayout):
     pass
@@ -144,48 +154,24 @@ class MDListDrawer(ThemableBehavior, MDList):
 class ScreenBeers(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
-        
-    pass
-
-class ScreenResources(Screen):
-    pass
-
-class ScreenInfo(Screen):
-    pass
-
-
-class BeersApp(MDApp):
-    """
-    This class inherits the App class from kivy
-    The name of this class will also determine the name of the .kv files (for layout/design)
-    .kv file name is not case-sensitive to the class name but should be all lowercase to avoid issues
-    .kv file name can exclude "App" portion of App class identifier
-    """
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
         self.finished_check = Event() # Cross-thread event to indicate whether or not drug checking has finished
         self.reports_queue = Queue() # Queue for nodes to be added 
-        self.theme_cls.theme_style = "Light"
-        self.theme_cls.primary_palette = "Blue"
-    
-    def drawNavigation(self):
-        self.root.ids.nav_drawer.set_state('open')
-        return
-    
-    
+        
     def checkBeers(self):
         # Note that graphics will not update until this function reaches return statement/end of fx definition        
         
-        tree_view: TreeView = self.root.ids.tree_view
-        for node in [i for i in tree_view.iterate_all_nodes()]:
-            tree_view.remove_node(node) # Clear nodes        
-        creat_str = self.root.ids.creatinine.text
+        
+        
+        report_cont: Report = self.ids.report
+        report_cont.clear_widgets()
+        
+        creat_str: str = self.ids.creatinine.text
         try: 
             creat_num = float(creat_str)
         except ValueError: # Set creat_num to 0 when creat_str is empty or invalid
             creat_num = 0
         
-        text_in: str = self.root.text_in1.text
+        text_in: str = self.ids.text_in1.text
         
         # Reset event and queues
         self.finished_check = Event() # Cross-thread event to indicate whether or not drug checking has finished
@@ -214,17 +200,29 @@ class BeersApp(MDApp):
         while True:
             while not self.reports_queue.empty():
                 nodes: tuple[str, str] = self.reports_queue.get()
-                self._addNestedNode(nodes[0], nodes[1]) # Add these nodes using the main thread
+                self._addReportItem(nodes[0], nodes[1]) # Add these nodes using the main thread
             if self.finished_check.is_set(): # Waiting on separate thread to finish 
                 self.pop_up.dismiss() # Backup pop-up dismisser in case separate thread does not handle it 
                 break
             time.sleep(0.01) # In case other threads need to run extensive loops 
         
-    def _addNestedNode(self, l1_info, l2_info = None): # Passing processed information into main thread
-        tree_view: TreeView = self.root.ids.tree_view
-        l1_node = tree_view.add_node(TreeViewLabel(text=l1_info))
-        if l2_info: # If there's info for subnode
-            tree_view.add_node(TreeViewLabel(text=l2_info, markup=True), l1_node)
+    def _addReportItem(self, l1_info, l2_info = None): # Passing processed information into main thread
+        report_item = MDExpansionPanel(
+            icon="information",
+            content=ThreeLineListItem(
+                text="label",
+                tertiary_text=l2_info,
+                ),
+            panel_cls=MDExpansionPanelTwoLine(
+                text=l1_info,
+                secondary_text="secondary text"
+            )
+        )
+        self.ids.report.add_widget(report_item)
+        # tree_view: TreeView = self.root.ids.tree_view
+        # l1_node = tree_view.add_node(TreeViewLabel(text=l1_info))
+        # if l2_info: # If there's info for subnode
+        #     tree_view.add_node(TreeViewLabel(text=l2_info, markup=True), l1_node)
         
     
     def parseDrugs(self, creat_num: float, text_in: str):
@@ -259,6 +257,34 @@ class BeersApp(MDApp):
         # Refer back to self events and popups to dismiss them
         self.finished_check.set()
         self.pop_up.dismiss()
+    pass
+
+class ScreenResources(Screen):
+    pass
+
+class ScreenInfo(Screen):
+    pass
+
+
+class BeersApp(MDApp):
+    """
+    This class inherits the App class from kivy
+    The name of this class will also determine the name of the .kv files (for layout/design)
+    .kv file name is not case-sensitive to the class name but should be all lowercase to avoid issues
+    .kv file name can exclude "App" portion of App class identifier
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.theme_cls.theme_style = "Light"
+        self.theme_cls.primary_palette = "Blue"
+    
+    def drawNavigation(self):
+        self.root.ids.nav_drawer.set_state('open')
+        return
+    
+    
+
 
     def openLink(self, link):
         webbrowser.open(link)

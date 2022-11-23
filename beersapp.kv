@@ -25,7 +25,6 @@
         width: self.minimum_width
 
 
-
 <DrawerLayout>:
     orientation: "vertical"
     MDLabel:
@@ -72,6 +71,7 @@
                 IconLeftWidget:
                     icon: "information"
 
+<Report>:
 
 <ScreenBeers>:
     name: "screen_beers"
@@ -90,7 +90,7 @@
             MDRectangleFlatButton:
                 text: "Check\ndrugs"
                 size_hint: 0.2, 1
-                on_press: app.checkBeers()
+                on_press: root.checkBeers()
                 background_color: app.theme_cls.primary_color
         TextInput:
             id: creatinine # ID assigns the identifier of this object in the root object in python (i.e., RootLayout)
@@ -110,12 +110,14 @@
             id: scroll_view
             do_scroll_x: False
             do_scroll_y: True
-            CTreeView:
-                id: tree_view
-                root_options: dict(text='Checking drug entries against database...')
-                hide_root: True
+            Report:
+                id: report
+                orientation: "vertical"
                 size_hint_y: None # Need to set this to none in order to use scrollview in the respective direction (x and y)
                 height: self.minimum_height # Bind height (used for scroll) to minimum_height which changes when children are expanded
+
+                # root_options: dict(text='Checking drug entries against database...')
+                # hide_root: True
 
 <ScreenResources>:
     name: "screen_resources"
